@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Tauler mTiny - Makeblock</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome per a icones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka per un toc educatiu i amigable, i Inter per a la UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            user-select: none;
+        }
+        h1, h2, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        /* Efecte de peces de puzle / plaques de cartró mTiny */
+        .mtiny-tile {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45), 0 4px 8px rgba(0,0,0,0.45);
+        }
+        .mtiny-tile:hover {
+            transform: scale(1.03);
+            z-index: 10;
+        }
+        /* Forma d'encaix corbat al costat esquerre (plaques inicials d'animals) */
+        .curved-left-tile {
+            border-top-left-radius: 999px !important;
+            border-bottom-left-radius: 999px !important;
+        }
+        .tile-svg-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Animació suau del robot mTiny */
+        #mtiny-robot {
+            transition: top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 30;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.55));
+        }
+
+        /* Animació d'expressió d'alegria del robot */
+        @keyframes bounce-happy {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.1); }
+        }
+        .robot-happy {
+            animation: bounce-happy 0.5s ease-in-out 2;
+        }
+
+        /* Barra de desplaçament personalitzada en mode fosc */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-100">
+
+    <!-- Capçalera Superior -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between shadow-md z-20 gap-2">
+        <div class="flex items-center gap-3">
+            <!-- Logotip mTiny estilitzat -->
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/40">
+                <i class="fa-solid fa-robot text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de Taulers <span class="text-blue-400">mTiny</span></h1>
+                <p class="text-xs text-slate-400">Dissenya la catifa i programa el recorregut del panda</p>
+            </div>
+        </div>
+
+        <!-- Controls de la graella i eines ràpides -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
+                <span class="text-xs font-semibold text-slate-300 px-2">Mida Llençol:</span>
+                <select id="grid-size-select" class="bg-slate-900 text-xs font-bold text-slate-100 py-1 px-2 rounded shadow-sm border border-slate-700 focus:outline-none">
+                    <option value="4x4">4 x 4 (Compacte)</option>
+                    <option value="5x5">5 x 5 (Estàndard)</option>
+                    <option value="6x4" selected>6 x 4 (Panoràmic)</option>
+                    <option value="7x5">7 x 5 (Gran)</option>
+                </select>
+            </div>
+
+            <button id="btn-preset" class="px-3 py-1.5 bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 text-xs font-semibold rounded-lg border border-indigo-800 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Exemple
+            </button>
+
+            <button id="btn-clear-board" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-semibold rounded-lg border border-rose-800 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i> Netejar Llençol
+            </button>
+        </div>
+    </header>
+
+    <!-- Missatge flotant (Substitut d'alert) -->
+    <div id="toast-notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-300">
+        <div id="toast-content" class="bg-slate-800 text-slate-100 border border-slate-700 px-4 py-2.5 rounded-full shadow-2xl text-sm font-medium flex items-center gap-2">
+            <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
+            <span id="toast-text">Missatge del sistema</span>
+        </div>
+    </div>
+
+    <!-- Cos Principal (3 columnes en escriptori, apilat en mòbil) -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- PANELL ESQUERRE: Catàleg de Plaques mTiny -->
+        <aside class="w-full lg:w-80 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col z-10 shrink-0 max-h-[32vh] lg:max-h-full">
+            <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-puzzle-piece text-blue-400"></i> Plaques Disponibles
+                </h2>
+            </div>
+
+            <!-- Eines especials (Posicionar mTiny / Girar placa / Esborrar placa) -->
+            <div class="p-2.5 border-b border-slate-800 grid grid-cols-3 gap-1.5 bg-slate-900/80">
+                <button id="tool-place-robot" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-blue-500 bg-blue-950/70 text-blue-300 font-semibold text-[11px] shadow-sm transition">
+                    <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i> mTiny
+                </button>
+                <button id="tool-rotate-tile" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
+                    <i class="fa-solid fa-rotate-right mb-0.5 text-xs"></i> Girar Placa
+                </button>
+                <button id="tool-eraser" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
+                    <i class="fa-solid fa-eraser mb-0.5 text-xs"></i> Treure
+                </button>
+            </div>
+
+            <!-- Llista de categories i plaques -->
+            <div id="tiles-palette" class="p-3 overflow-y-auto flex-1 space-y-4">
+                <!-- Es genera dinàmicament amb JavaScript -->
+            </div>
+        </aside>
+
+        <!-- ZONA CENTRAL: Llençol en blanc (Graella interactiva) -->
+        <section class="flex-1 bg-slate-950 relative flex flex-col items-center justify-center p-4 overflow-auto">
+            
+            <!-- Instrucció contextual superior -->
+            <div class="mb-3 bg-slate-900/90 backdrop-blur px-4 py-1.5 rounded-full shadow-md border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
+                <span id="active-tool-badge" class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
+                <span id="active-tool-label">Eina activa: <strong>Col·locar / Girar mTiny</strong> (Fes clic en una casella)</span>
+            </div>
+
+            <!-- Contenidor del Llençol -->
+            <div id="canvas-wrapper" class="bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-2xl border-4 border-slate-800 relative flex items-center justify-center">
+                <!-- La graella on es col·loquen les plaques -->
+                <div id="board-grid" class="grid gap-1.5 bg-slate-950/90 p-2 rounded-xl border-2 border-dashed border-slate-700 relative">
+                    <!-- Caselles generades dinàmicament -->
+                </div>
+
+                <!-- El Robot mTiny (Superposat absolutament sobre el tauler) -->
+                <div id="mtiny-robot" class="absolute pointer-events-none flex items-center justify-center hidden" style="width: 60px; height: 60px;">
+                    <!-- SVG personalitzat del robot mTiny vist des de dalt (Vista zenital) -->
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Rodes laterals vistes des de dalt -->
+                        <rect x="8" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                        <rect x="83" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                        <!-- Petits connectors magnètics laterals (braços) -->
+                        <rect x="11" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
+                        <rect x="84" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
+                        <!-- Carcassa superior blanca arrodonida (Vista zenital del cos quadrat) -->
+                        <rect x="16" y="16" width="68" height="68" rx="22" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+                        <!-- Detall de relleu interior de la tapa superior -->
+                        <rect x="22" y="22" width="56" height="56" rx="17" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+                        <!-- Orelles de Panda vistes des de dalt (situades a la part davantera / Nord) -->
+                        <ellipse cx="29" cy="24" rx="10" ry="7" transform="rotate(-25 29 24)" fill="#1e293b"/>
+                        <ellipse cx="71" cy="24" rx="10" ry="7" transform="rotate(25 71 24)" fill="#1e293b"/>
+                        <!-- Visera / Franja frontal superior del visor -->
+                        <path d="M32 17 Q50 13 68 17" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                        <!-- Botó d'encesa central a la part superior -->
+                        <circle cx="50" cy="52" r="7" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
+                        <circle cx="50" cy="52" r="2.5" fill="#0284c7"/>
+                        <!-- Franja posterior blava característica de Makeblock -->
+                        <path d="M32 76 Q50 81 68 76" stroke="#2563eb" stroke-width="4" stroke-linecap="round" fill="none"/>
+                        <!-- Fletxa vermella frontal que indica cap on mira i avança -->
+                        <polygon points="50,3 42,13 58,13" fill="#ef4444" stroke="#ffffff" stroke-width="1"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Controls manuals ràpids per moure el robot directament (com el Tap Pen Controller) -->
+            <div class="mt-4 flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-xl shadow-md border border-slate-800">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Control Directe:</span>
+                <button onclick="moveRobotManual('left')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition" title="Girar Esquerra">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button onclick="moveRobotManual('forward')" class="w-8 h-8 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 flex items-center justify-center transition" title="Avançar">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+                <button onclick="moveRobotManual('right')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition" title="Girar Dreta">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- PANELL DRET: Targetes de Programació mTiny -->
+        <aside class="w-full lg:w-80 bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col z-10 shrink-0 max-h-[34vh] lg:max-h-full">
+            <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-emerald-400"></i> Targetes de Codi
+                </h2>
+                <button id="btn-clear-code" class="text-xs text-slate-400 hover:text-rose-400 font-medium">
+                    Esborrar tot
+                </button>
+            </div>
+
+            <!-- Botonera de targetes físiques de mTiny -->
+            <div class="p-3 border-b border-slate-800 bg-slate-900/60 space-y-2">
+                <p class="text-[11px] text-slate-400 font-medium">Targetes de moviment i control (lectura →):</p>
+                <div class="grid grid-cols-5 gap-1.5 items-center">
+                    <button onclick="addCommand('start')" class="h-12 flex items-center justify-center p-1.5 rounded-l-full rounded-r-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 shadow-sm transition active:scale-95" title="Inici de programa">
+                        <i class="fa-solid fa-flag text-emerald-600 text-base"></i>
+                    </button>
+                    <button onclick="addCommand('forward')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-700 shadow-sm transition active:scale-95" title="Avançar">
+                        <i class="fa-solid fa-arrow-right text-base"></i>
+                    </button>
+                    <button onclick="addCommand('left')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Esquerra">
+                        <i class="fa-solid fa-arrow-turn-up text-base"></i>
+                    </button>
+                    <button onclick="addCommand('right')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Dreta">
+                        <i class="fa-solid fa-arrow-turn-down text-base"></i>
+                    </button>
+                    <button onclick="addCommand('execute')" class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 shadow-sm transition active:scale-95" title="Executar codi">
+                        <i class="fa-solid fa-flag text-lime-200 text-base"></i>
+                    </button>
+                </div>
+
+                <!-- Parèntesis i Multiplicadors (x2, x3, x4) en Groc -->
+                <div class="grid grid-cols-5 gap-1.5">
+                    <button onclick="addCommand('open_paren')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Obre parèntesi">
+                        (
+                    </button>
+                    <button onclick="addCommand('close_paren')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Tanca parèntesi">
+                        )
+                    </button>
+                    <button onclick="addCommand('x2')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x2">
+                        x2
+                    </button>
+                    <button onclick="addCommand('x3')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x3">
+                        x3
+                    </button>
+                    <button onclick="addCommand('x4')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x4">
+                        x4
+                    </button>
+                </div>
+
+                <!-- Bucles (2, 3, 4) en Groc -->
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button onclick="addCommand('loop2')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 2">
+                        <i class="fa-solid fa-repeat text-xs"></i> 2
+                    </button>
+                    <button onclick="addCommand('loop3')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 3">
+                        <i class="fa-solid fa-repeat text-xs"></i> 3
+                    </button>
+                    <button onclick="addCommand('loop4')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 4">
+                        <i class="fa-solid fa-repeat text-xs"></i> 4
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seqüència de targetes programades (disposició horitzontal d'esquerra a dreta com les targetes físiques) -->
+            <div id="code-sequence" class="flex-1 p-3 overflow-y-auto flex flex-wrap content-start gap-2 bg-slate-950/40">
+                <div id="empty-code-msg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
+                    <i class="fa-solid fa-hand-pointer text-2xl mb-2 opacity-50"></i>
+                    <p class="text-xs">Fes clic a les targetes per construir la fila de codi d'esquerra a dreta →</p>
+                </div>
+            </div>
+
+            <!-- Botó d'execució (Com la targeta verda de bandera / Tap Pen) -->
+            <div class="p-3 border-t border-slate-800 bg-slate-900 flex gap-2">
+                <button id="btn-run-code" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-flag text-lime-200"></i> Executa Programa
+                </button>
+                <button id="btn-reset-pos" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition" title="Tornar a la posició inicial">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        /**
+         * CATÀLEG PERSONALITZAT DE PLAQUES MTINY
+         * - 4 plaques d'animals amb el costat esquerre corbat (no admeten encaix per l'esquerra, màx. 1 de cada)
+         * - 13 plaques temàtiques úniques (màx. 1 de cada)
+         * - 7 peces de gespa verda (màx. 7 en total)
+         */
+        const TILE_CATALOG = [
+            // --- 1. PLAQUES D'ANIMALS (Costat esquerre corbat, sense encaix a l'esquerra, màx 1) ---
+            {
+                id: 'animal_dog', category: 'Animals (Inici esquerra corbat)', name: 'Gosset',
+                bg: '#fef08a', border: '#eab308', textColor: '#854d0e', sound: 'dog',
+                curvedLeft: true, maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef08a"/><circle cx="54" cy="52" r="26" fill="#d97706"/><ellipse cx="30" cy="48" rx="7" ry="15" transform="rotate(15 30 48)" fill="#78350f"/><ellipse cx="78" cy="48" rx="7" ry="15" transform="rotate(-15 78 48)" fill="#78350f"/><circle cx="45" cy="46" r="4" fill="#1e293b"/><circle cx="63" cy="46" r="4" fill="#1e293b"/><ellipse cx="54" cy="58" rx="10" ry="7" fill="#fef3c7"/><ellipse cx="54" cy="55" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 62q5 5 10 0" stroke="#1e293b" stroke-width="2.5" fill="none"/></svg>`
+            },
+            {
+                id: 'animal_chicken', category: 'Animals (Inici esquerra corbat)', name: 'Pollet',
+                bg: '#dcfce7', border: '#22c55e', textColor: '#14532d', sound: 'bird',
+                curvedLeft: true, maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dcfce7"/><path d="M49 24c2-6 8-6 10 0" stroke="#ef4444" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="54" cy="54" r="24" fill="#facc15"/><circle cx="46" cy="48" r="3.5" fill="#1e293b"/><circle cx="62" cy="48" r="3.5" fill="#1e293b"/><polygon points="48,55 60,55 54,63" fill="#f97316"/></svg>`
+            },
+            {
+                id: 'animal_panda', category: 'Animals (Inici esquerra corbat)', name: 'Panda',
+                bg: '#e0f2fe', border: '#0284c7', textColor: '#0c4a6e', sound: 'panda',
+                curvedLeft: true, maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#e0f2fe"/><circle cx="36" cy="30" r="10" fill="#1e293b"/><circle cx="72" cy="30" r="10" fill="#1e293b"/><circle cx="54" cy="54" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/><ellipse cx="44" cy="50" rx="6" ry="8" transform="rotate(-15 44 50)" fill="#1e293b"/><ellipse cx="64" cy="50" rx="6" ry="8" transform="rotate(15 64 50)" fill="#1e293b"/><circle cx="45" cy="49" r="2.2" fill="#ffffff"/><circle cx="63" cy="49" r="2.2" fill="#ffffff"/><ellipse cx="54" cy="60" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 65q5 4 10 0" stroke="#1e293b" stroke-width="2" fill="none"/></svg>`
+            },
+            {
+                id: 'animal_cat', category: 'Animals (Inici esquerra corbat)', name: 'Gat',
+                bg: '#fbcfe8', border: '#ec4899', textColor: '#831843', sound: 'cat',
+                curvedLeft: true, maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fbcfe8"/><polygon points="30,42 36,18 50,34" fill="#f97316"/><polygon points="78,42 72,18 58,34" fill="#f97316"/><circle cx="54" cy="54" r="24" fill="#fb923c"/><circle cx="45" cy="49" r="3.5" fill="#1e293b"/><circle cx="63" cy="49" r="3.5" fill="#1e293b"/><polygon points="50,56 58,56 54,60" fill="#f43f5e"/><line x1="26" y1="54" x2="38" y2="56" stroke="#7c2d12" stroke-width="2"/><line x1="82" y1="54" x2="70" y2="56" stroke="#7c2d12" stroke-width="2"/></svg>`
+            },
+
+            // --- 2. GESPA VERDA (7 peces disponibles) ---
+            {
+                id: 'grass_plain', category: 'Terreny Base (7 peces)', name: 'Gespa Verda',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610',
+                maxCount: 7,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M22 32l3-7 3 7M70 25l3-7 3 7M28 75l3-7 3 7M75 72l3-7 3 7" stroke="#55a630" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="50" cy="50" r="3" fill="#fef08a"/><circle cx="80" cy="45" r="2.5" fill="#ffffff"/></svg>`
+            },
+
+            // --- 3. PLAQUES TEMÀTIQUES ÚNIQUES (1 de cada) ---
+            {
+                id: 'food_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn amb os',
+                bg: '#fee2e2', border: '#ef4444', textColor: '#7f1d1d', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fee2e2"/><rect x="18" y="44" width="64" height="12" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="18" cy="43" r="6" fill="#fef3c7"/><circle cx="18" cy="57" r="6" fill="#fef3c7"/><circle cx="82" cy="43" r="6" fill="#fef3c7"/><circle cx="82" cy="57" r="6" fill="#fef3c7"/><rect x="28" y="30" width="44" height="40" rx="16" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/><ellipse cx="45" cy="42" rx="10" ry="4" fill="#fca5a5" opacity="0.6"/></svg>`
+            },
+            {
+                id: 'bamboo_forest', category: 'Plaques Úniques (1 de cada)', name: 'Bosc de bambú',
+                bg: '#80ed99', border: '#38b000', textColor: '#143601', sound: 'panda', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#80ed99"/><rect x="24" y="15" width="7" height="70" rx="2" fill="#2b9348"/><rect x="46" y="10" width="8" height="75" rx="2" fill="#007f5f"/><rect x="68" y="18" width="7" height="67" rx="2" fill="#2b9348"/><line x1="22" y1="35" x2="33" y2="35" stroke="#aacc00" stroke-width="3"/><line x1="22" y1="60" x2="33" y2="60" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="30" x2="56" y2="30" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="55" x2="56" y2="55" stroke="#aacc00" stroke-width="3"/><ellipse cx="60" cy="25" rx="8" ry="3.5" transform="rotate(-25 60 25)" fill="#55a630"/><ellipse cx="36" cy="45" rx="8" ry="3.5" transform="rotate(20 36 45)" fill="#55a630"/></svg>`
+            },
+            {
+                id: 'food_fish', category: 'Plaques Úniques (1 de cada)', name: 'Peix',
+                bg: '#cffafe', border: '#06b6d4', textColor: '#164e63', sound: 'cat', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#cffafe"/><polygon points="72,50 88,34 88,66" fill="#0284c7"/><ellipse cx="46" cy="50" rx="30" ry="18" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/><circle cx="30" cy="46" r="3.5" fill="#0f172a"/><path d="M44 38q-6 12 0 24M55 40q-5 10 0 20" stroke="#e0f2fe" stroke-width="2.5" fill="none"/></svg>`
+            },
+            {
+                id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: 'Pinya de blat de moro',
+                bg: '#fef9c3', border: '#ca8a04', textColor: '#713f12', sound: 'bird', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef9c3"/><ellipse cx="50" cy="46" rx="15" ry="28" fill="#facc15" stroke="#ca8a04" stroke-width="2"/><path d="M38 35h24M36 46h28M38 57h24M45 22v48M55 22v48" stroke="#eab308" stroke-width="2"/><path d="M35 45Q22 65 50 80Q40 60 35 45Z" fill="#22c55e"/><path d="M65 45Q78 65 50 80Q60 60 65 45Z" fill="#16a34a"/></svg>`
+            },
+            {
+                id: 'merry_go_round', category: 'Plaques Úniques (1 de cada)', name: 'Carrussel',
+                bg: '#f3e8ff', border: '#9333ea', textColor: '#581c87', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3e8ff"/><rect x="20" y="76" width="60" height="8" rx="3" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/><rect x="46" y="38" width="8" height="38" fill="#facc15"/><line x1="30" y1="38" x2="30" y2="76" stroke="#94a3b8" stroke-width="2.5"/><line x1="70" y1="38" x2="70" y2="76" stroke="#94a3b8" stroke-width="2.5"/><ellipse cx="30" cy="58" rx="8" ry="5" fill="#ffffff" stroke="#a855f7" stroke-width="2"/><circle cx="24" cy="53" r="3.5" fill="#ffffff" stroke="#a855f7" stroke-width="1.5"/><ellipse cx="70" cy="54" rx="8" ry="5" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/><circle cx="76" cy="49" r="3.5" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/><polygon points="50,14 16,38 84,38" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><polygon points="50,14 34,38 66,38" fill="#facc15"/><circle cx="50" cy="12" r="4" fill="#facc15"/></svg>`
+            },
+            {
+                id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota de futbol',
+                bg: '#dcfce7', border: '#16a34a', textColor: '#14532d', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dcfce7"/><circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#1e293b" stroke-width="3"/><polygon points="50,38 61,46 57,59 43,59 39,46" fill="#1e293b"/><line x1="50" y1="38" x2="50" y2="22" stroke="#1e293b" stroke-width="2.5"/><line x1="61" y1="46" x2="76" y2="41" stroke="#1e293b" stroke-width="2.5"/><line x1="57" y1="59" x2="66" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="43" y1="59" x2="34" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="39" y1="46" x2="24" y2="41" stroke="#1e293b" stroke-width="2.5"/></svg>`
+            },
+            {
+                id: 'jack_in_box', category: 'Plaques Úniques (1 de cada)', name: 'Pallasso caixa regal',
+                bg: '#ffedd5', border: '#ea580c', textColor: '#7c2d12', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#ffedd5"/><rect x="30" y="56" width="40" height="28" rx="3" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><line x1="50" y1="56" x2="50" y2="84" stroke="#facc15" stroke-width="5"/><path d="M46 56L54 50L46 44L54 38" stroke="#64748b" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><circle cx="50" cy="29" r="3" fill="#ef4444"/><polygon points="40,19 60,19 50,8" fill="#3b82f6"/></svg>`
+            },
+            {
+                id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Banyera amb dutxa',
+                bg: '#e0f2fe', border: '#0ea5e9', textColor: '#0369a1', sound: 'step', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#e0f2fe"/><path d="M74 52V24Q74 16 64 16H58" stroke="#64748b" stroke-width="3.5" fill="none"/><polygon points="52,16 62,16 60,23 54,23" fill="#94a3b8"/><line x1="55" y1="27" x2="53" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><line x1="59" y1="27" x2="61" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><path d="M20 52H80V64Q80 78 62 78H38Q20 78 20 64Z" fill="#ffffff" stroke="#0284c7" stroke-width="2.5"/><rect x="16" y="48" width="68" height="6" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></svg>`
+            },
+            {
+                id: 'house_tile', category: 'Plaques Úniques (1 de cada)', name: 'Casa',
+                bg: '#fef3c7', border: '#d97706', textColor: '#78350f', sound: 'home', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef3c7"/><polygon points="50,18 18,46 82,46" fill="#ef4444" stroke="#991b1b" stroke-width="2.5"/><rect x="26" y="46" width="48" height="36" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><rect x="43" y="58" width="14" height="24" fill="#92400e"/><rect x="31" y="54" width="9" height="9" fill="#38bdf8"/><rect x="60" y="54" width="9" height="9" fill="#38bdf8"/></svg>`
+            },
+            {
+                id: 'bed_tile', category: 'Plaques Úniques (1 de cada)', name: 'Llit',
+                bg: '#ede9fe', border: '#7c3aed', textColor: '#4c1d95', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#ede9fe"/><rect x="20" y="34" width="8" height="44" rx="2" fill="#92400e"/><rect x="72" y="46" width="8" height="32" rx="2" fill="#92400e"/><rect x="28" y="54" width="44" height="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><rect x="42" y="52" width="30" height="16" rx="3" fill="#8b5cf6"/><rect x="29" y="47" width="14" height="8" rx="3" fill="#fef08a"/><rect x="20" y="66" width="60" height="6" fill="#b45309"/></svg>`
+            },
+            {
+                id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: "Pastís d'aniversari",
+                bg: '#fce7f3', border: '#db2777', textColor: '#831843', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fce7f3"/><rect x="24" y="54" width="52" height="24" rx="4" fill="#f472b6" stroke="#be185d" stroke-width="2"/><rect x="32" y="38" width="36" height="16" rx="3" fill="#fbcfe8" stroke="#be185d" stroke-width="2"/><rect x="48" y="24" width="4" height="14" fill="#38bdf8"/><path d="M50 14Q54 20 50 24Q46 20 50 14Z" fill="#facc15"/></svg>`
+            },
+            {
+                id: 'ghost_tile', category: 'Plaques Úniques (1 de cada)', name: 'Fantasma',
+                bg: '#e2e8f0', border: '#475569', textColor: '#1e293b', sound: 'error', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#334155"/><path d="M28 50A22 22 0 0 1 72 50V78L63 70L54 78L45 70L36 78L28 70Z" fill="#ffffff"/><circle cx="42" cy="46" r="4" fill="#0f172a"/><circle cx="58" cy="46" r="4" fill="#0f172a"/><ellipse cx="50" cy="57" rx="4" ry="5" fill="#0f172a"/></svg>`
+            },
+            {
+                id: 'book_tile', category: 'Plaques Úniques (1 de cada)', name: 'Llibre',
+                bg: '#dbeafe', border: '#2563eb', textColor: '#1e3a8a', sound: 'step', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dbeafe"/><path d="M20 30Q35 26 50 32Q65 26 80 30V72Q65 68 50 74Q35 68 20 72Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="3"/><line x1="50" y1="32" x2="50" y2="74" stroke="#1d4ed8" stroke-width="2.5"/><line x1="27" y1="42" x2="43" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="27" y1="52" x2="43" y2="52" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="42" x2="73" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="52" x2="73" y2="52" stroke="#93c5fd" stroke-width="2.5"/></svg>`
+            }
+        ];
+
+        // Estat global de l'aplicació
+        let state = {
+            cols: 6,
+            rows: 4,
+            board: [], // Matriu [row][col] amb { id, rotation } o null
+            selectedTool: 'place_robot', // 'place_robot', 'rotate_tile', 'eraser', o ID d'una placa
+            robot: {
+                placed: false, // No apareix fins que l'usuari el col·loqui
+                row: 0,
+                col: 0,
+                dir: 1 // 0: Nord (Amunt), 1: Est (Dreta), 2: Sud (Avall), 3: Oest (Esquerra)
+            },
+            initialRobot: { placed: false, row: 0, col: 0, dir: 1 },
+            commands: [],
+            isRunning: false
+        };
+        // Compta quantes unitats d'una placa hi ha actualment col·locades al tauler
+        function getTilePlacedCount(tileId) {
+            let count = 0;
+            for (let r = 0; r < state.rows; r++) {
+                for (let c = 0; c < state.cols; c++) {
+                    if (state.board[r] && state.board[r][c] && state.board[r][c].id === tileId) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        // Inicialitza la paleta de plaques a la barra lateral esquerra
+        function renderPalette() {
+            const container = document.getElementById('tiles-palette');
+            container.innerHTML = '';
+
+            // Agrupar plaques per categoria
+            const categories = [...new Set(TILE_CATALOG.map(t => t.category))];
+
+            categories.forEach(cat => {
+                const section = document.createElement('div');
+                section.innerHTML = `<h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">${cat}</h3>`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 gap-2';
+
+                TILE_CATALOG.filter(t => t.category === cat).forEach(tile => {
+                    const placedCount = getTilePlacedCount(tile.id);
+                    const maxCount = tile.maxCount || 99;
+                    const isDepleted = placedCount >= maxCount;
+
+                    const btn = document.createElement('button');
+                    btn.id = `palette-tile-${tile.id}`;
+                    btn.draggable = !isDepleted;
+                    btn.className = `palette-item flex items-center gap-2 p-2 rounded-xl border-2 text-left transition shadow-sm ${
+                        isDepleted 
+                        ? 'border-slate-800 bg-slate-950/70 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-700/80 bg-slate-800/80 hover:border-blue-400'
+                    }`;
+                    
+                    btn.innerHTML = `
+                        <div class="w-9 h-9 rounded-lg overflow-hidden shrink-0 shadow-sm tile-svg-container ${tile.curvedLeft ? 'curved-left-tile' : ''}" style="border: 2px solid ${tile.border};">
+                            ${tile.svg}
+                        </div>
+                        <div class="overflow-hidden flex-1">
+                            <div class="text-xs font-bold text-slate-100 truncate">${tile.name}</div>
+                            <div class="text-[10px] font-semibold ${isDepleted ? 'text-rose-400' : 'text-slate-400'}">
+                                Disp: ${maxCount - placedCount}/${maxCount}
+                            </div>
+                        </div>
+                    `;
+
+                    // Selecció per clic
+                    btn.addEventListener('click', () => {
+                        if (isDepleted) {
+                            showToast(`Ja has col·locat el màxim de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
+                            return;
+                        }
+                        selectTool(tile.id);
+                    });
+
+                    // Suport Drag & Drop (Arrossegar al llençol)
+                    btn.addEventListener('dragstart', (e) => {
+                        if (isDepleted) {
+                            e.preventDefault();
+                            return;
+                        }
+                        e.dataTransfer.setData('text/plain', tile.id);
+                        selectTool(tile.id);
+                    });
+
+                    grid.appendChild(btn);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+
+            // Reaplicar l'estil seleccionat si l'eina activa és una placa
+            if (TILE_CATALOG.some(t => t.id === state.selectedTool)) {
+                const activeBtn = document.getElementById(`palette-tile-${state.selectedTool}`);
+                if (activeBtn && !activeBtn.classList.contains('cursor-not-allowed')) {
+                    activeBtn.classList.remove('border-slate-700/80', 'bg-slate-800/80');
+                    activeBtn.classList.add('border-blue-500', 'bg-blue-950/70', 'ring-2', 'ring-blue-500/40');
+                }
+            }
+        }
+
+        // Mostra notificacions visuals sense usar alert()
+        let toastTimeout;
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast-notification');
+            const text = document.getElementById('toast-text');
+            const icon = document.getElementById('toast-icon');
+            
+            text.textContent = message;
+            icon.className = type === 'error' 
+                ? 'fa-solid fa-triangle-exclamation text-rose-400' 
+                : (type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-info text-blue-400');
+
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2800);
+        }
+
+        // Sintetitzador d'efectes de so mitjançant Web Audio API (sense dependències externes)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSoundEffect(type) {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                switch (type) {
+                    case 'step':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(320, now);
+                        osc.frequency.exponentialRampToValueAtTime(480, now + 0.08);
+                        gain.gain.setValueAtTime(0.08, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                        osc.start(now);
+                        osc.stop(now + 0.09);
+                        break;
+                    case 'turn':
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                        gain.gain.setValueAtTime(0.08, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+                        osc.start(now);
+                        osc.stop(now + 0.11);
+                        break;
+                    case 'happy':
+                    case 'music':
+                    case 'home':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523.25, now); // Do
+                        osc.frequency.setValueAtTime(659.25, now + 0.1); // Mi
+                        osc.frequency.setValueAtTime(783.99, now + 0.2); // Sol
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                        break;
+                    case 'dog':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(220, now);
+                        osc.frequency.exponentialRampToValueAtTime(140, now + 0.15);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+                        osc.start(now);
+                        osc.stop(now + 0.16);
+                        break;
+                    case 'cat':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+                        osc.frequency.exponentialRampToValueAtTime(540, now + 0.28);
+                        gain.gain.setValueAtTime(0.09, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                    case 'bird':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1200, now);
+                        osc.frequency.exponentialRampToValueAtTime(1600, now + 0.08);
+                        gain.gain.setValueAtTime(0.08, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                        break;
+                    case 'panda':
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(340, now);
+                        osc.frequency.exponentialRampToValueAtTime(460, now + 0.18);
+                        gain.gain.setValueAtTime(0.09, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                        break;
+                    case 'error':
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(180, now);
+                        osc.frequency.setValueAtTime(130, now + 0.12);
+                        gain.gain.setValueAtTime(0.08, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+                        osc.start(now);
+                        osc.stop(now + 0.26);
+                        break;
+                }
+            } catch (e) {
+                // Ignorar errors d'àudio si el navegador bloqueja l'autoplay
+            }
+        }
+
+        // Actualitza la posició visual i rotació del robot mTiny sobre la graella
+        function updateRobotVisualPosition(customTileSize = null) {
+            const robotEl = document.getElementById('mtiny-robot');
+            const gridEl = document.getElementById('board-grid');
+            const wrapperEl = document.getElementById('canvas-wrapper');
+            if (!robotEl || !gridEl || !wrapperEl) return;
+
+            if (!state.robot.placed) {
+                robotEl.classList.add('hidden');
+                return;
+            }
+            robotEl.classList.remove('hidden');
+
+            const tileSize = customTileSize || computeOptimalTileSize();
+            const gap = 6; // gap-1.5 = 0.375rem = 6px
+            const gridPadding = 8; // p-2 = 0.5rem = 8px
+            const borderWidth = 2; // border-2 = 2px
+
+            const robotSize = Math.round(tileSize * 0.76);
+            robotEl.style.width = `${robotSize}px`;
+            robotEl.style.height = `${robotSize}px`;
+
+            const gridOffsetLeft = gridEl.offsetLeft;
+            const gridOffsetTop = gridEl.offsetTop;
+
+            const cellX = gridOffsetLeft + borderWidth + gridPadding + state.robot.col * (tileSize + gap);
+            const cellY = gridOffsetTop + borderWidth + gridPadding + state.robot.row * (tileSize + gap);
+
+            const left = cellX + (tileSize - robotSize) / 2;
+            const top = cellY + (tileSize - robotSize) / 2;
+            const rotationDeg = state.robot.dir * 90;
+
+            robotEl.style.left = `${left}px`;
+            robotEl.style.top = `${top}px`;
+            robotEl.style.transform = `rotate(${rotationDeg}deg)`;
+        }
+
+        // Calcula dinàmicament la mida òptima (més gran) de les plaques segons l'espai disponible al llençol
+        function computeOptimalTileSize() {
+            const boardSection = document.getElementById('board-grid')?.closest('section');
+            const isMobile = window.innerWidth < 640;
+
+            if (!boardSection) {
+                return isMobile ? Math.min(62, Math.floor((window.innerWidth - 64) / state.cols)) : 104;
+            }
+
+            const availWidth = boardSection.clientWidth - (isMobile ? 64 : 110);
+            const availHeight = boardSection.clientHeight - (isMobile ? 130 : 170);
+            const gap = 6;
+
+            const maxByWidth = Math.floor((availWidth - gap * (state.cols - 1)) / state.cols);
+            const maxByHeight = Math.floor((availHeight - gap * (state.rows - 1)) / state.rows);
+
+            const minSize = isMobile ? 48 : 78;
+            const maxSize = isMobile ? 76 : 124;
+
+            return Math.max(minSize, Math.min(maxSize, maxByWidth, maxByHeight));
+        }
+
+        // Canvia l'eina activa (col·locar placa, girar, esborrar o posicionar robot)
+        function selectTool(toolId) {
+            state.selectedTool = toolId;
+
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-950/70', 'text-blue-300');
+                btn.classList.add('border-transparent', 'bg-slate-800', 'text-slate-300');
+            });
+
+            document.querySelectorAll('.palette-item').forEach(btn => {
+                if (!btn.classList.contains('cursor-not-allowed')) {
+                    btn.classList.remove('border-blue-500', 'bg-blue-950/70', 'ring-2', 'ring-blue-500/40');
+                    btn.classList.add('border-slate-700/80', 'bg-slate-800/80');
+                }
+            });
+
+            const badge = document.getElementById('active-tool-badge');
+            const label = document.getElementById('active-tool-label');
+
+            if (toolId === 'place_robot') {
+                const btn = document.getElementById('tool-place-robot');
+                btn.classList.remove('border-transparent', 'bg-slate-800', 'text-slate-300');
+                btn.classList.add('border-blue-500', 'bg-blue-950/70', 'text-blue-300');
+                badge.className = 'w-2.5 h-2.5 rounded-full bg-blue-500 inline-block';
+                label.innerHTML = 'Eina activa: <strong>Col·locar / Girar mTiny</strong> (Fes clic en una casella)';
+            } else if (toolId === 'rotate_tile') {
+                const btn = document.getElementById('tool-rotate-tile');
+                btn.classList.remove('border-transparent', 'bg-slate-800', 'text-slate-300');
+                btn.classList.add('border-blue-500', 'bg-blue-950/70', 'text-blue-300');
+                badge.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 inline-block';
+                label.innerHTML = 'Eina activa: <strong>Girar Placa 90°</strong> (Fes clic sobre una placa)';
+            } else if (toolId === 'eraser') {
+                const btn = document.getElementById('tool-eraser');
+                btn.classList.remove('border-transparent', 'bg-slate-800', 'text-slate-300');
+                btn.classList.add('border-blue-500', 'bg-blue-950/70', 'text-blue-300');
+                badge.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
+                label.innerHTML = 'Eina activa: <strong>Treure Placa o mTiny</strong> (Fes clic a la casella)';
+            } else {
+                const tile = TILE_CATALOG.find(t => t.id === toolId);
+                const btn = document.getElementById(`palette-tile-${toolId}`);
+                if (btn && !btn.classList.contains('cursor-not-allowed')) {
+                    btn.classList.remove('border-slate-700/80', 'bg-slate-800/80');
+                    btn.classList.add('border-blue-500', 'bg-blue-950/70', 'ring-2', 'ring-blue-500/40');
+                }
+                badge.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block';
+                label.innerHTML = `Placa seleccionada: <strong>${tile ? tile.name : ''}</strong> (Fes clic al llençol)`;
+            }
+        }
+
+        // Inicialitza la matriu del tauler amb dimensions noves
+        function initBoard(cols, rows, keepExisting = false) {
+            const oldBoard = state.board;
+            const oldRows = state.rows;
+            const oldCols = state.cols;
+
+            state.cols = cols;
+            state.rows = rows;
+            state.board = Array.from({ length: rows }, (_, r) =>
+                Array.from({ length: cols }, (_, c) => {
+                    if (keepExisting && oldBoard[r] && oldBoard[r][c]) {
+                        return oldBoard[r][c];
+                    }
+                    return null;
+                })
+            );
+
+            if (state.robot.placed) {
+                if (state.robot.row >= rows || state.robot.col >= cols) {
+                    state.robot.row = Math.min(state.robot.row, rows - 1);
+                    state.robot.col = Math.min(state.robot.col, cols - 1);
+                }
+            }
+            if (!keepExisting) {
+                state.robot.placed = false;
+                state.initialRobot.placed = false;
+            }
+
+            renderPalette();
+            renderBoard();
+        }
+
+        // Dibuixa la graella del llençol
+        function renderBoard() {
+            const grid = document.getElementById('board-grid');
+            if (!grid) return;
+
+            if (!state.board || state.board.length !== state.rows) {
+                state.board = Array.from({ length: state.rows }, () => Array(state.cols).fill(null));
+            }
+
+            grid.innerHTML = '';
+
+            // Calcula la mida òptima i ampliada de cada casella segons la pantalla
+            const tileSize = computeOptimalTileSize();
+
+            grid.style.gridTemplateColumns = `repeat(${state.cols}, ${tileSize}px)`;
+            grid.style.gridTemplateRows = `repeat(${state.rows}, ${tileSize}px)`;
+
+            for (let r = 0; r < state.rows; r++) {
+                for (let c = 0; c < state.cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    const cellData = state.board[r] ? state.board[r][c] : null;
+                    if (cellData) {
+                        const tile = TILE_CATALOG.find(t => t.id === cellData.id);
+                        const rot = cellData.rotation || 0;
+                        cell.className = `mtiny-tile rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden ${tile.curvedLeft ? 'curved-left-tile' : ''}`;
+                        cell.style.backgroundColor = tile.bg;
+                        cell.style.border = `2.5px solid ${tile.border}`;
+                        cell.innerHTML = `
+                            <div class="w-full h-full tile-svg-container transition-transform duration-200" style="transform: rotate(${rot}deg);">
+                                ${tile.svg}
+                            </div>
+                            <span class="absolute bottom-1 left-1.5 right-1.5 bg-white/90 backdrop-blur-[1px] rounded px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-center leading-tight truncate shadow-sm" style="color: ${tile.textColor};">${tile.name}</span>
+                        `;
+                    } else {
+                        // Casella buida del llençol en blanc (en mode fosc)
+                        cell.className = 'rounded-xl border border-slate-800 bg-slate-900/90 hover:bg-slate-800/90 transition cursor-pointer flex items-center justify-center group';
+                        cell.innerHTML = `<span class="text-xs text-slate-600 opacity-0 group-hover:opacity-100 font-medium">+</span>`;
+                    }
+
+                    // Clic sobre la casella
+                    cell.addEventListener('click', () => handleCellClick(r, c));
+
+                    // Drop d'una placa arrossegada
+                    cell.addEventListener('dragover', (e) => e.preventDefault());
+                    cell.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const droppedTileId = e.dataTransfer.getData('text/plain');
+                        if (droppedTileId) {
+                            placeTileAt(r, c, droppedTileId);
+                        }
+                    });
+
+                    grid.appendChild(cell);
+                }
+            }
+
+            requestAnimationFrame(() => updateRobotVisualPosition(tileSize));
+        }
+
+        // Gestiona la col·locació d'una placa validant quantitat màxima i encaix corbat esquerre
+        function placeTileAt(r, c, tileId) {
+            const tile = TILE_CATALOG.find(t => t.id === tileId);
+            if (!tile) return;
+
+            const existingCell = state.board[r][c];
+            if (existingCell && existingCell.id === tileId) {
+                // Si és la mateixa placa, la girem 90 graus
+                existingCell.rotation = ((existingCell.rotation || 0) + 90) % 360;
+                renderBoard();
+                return;
+            }
+
+            // Comprovar disponibilitat de la peça
+            const placedCount = getTilePlacedCount(tileId);
+            const maxCount = tile.maxCount || 99;
+            if (placedCount >= maxCount) {
+                showToast(`Ja no queden peces disponibles de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
+                playSoundEffect('error');
+                return;
+            }
+
+            // Validació 1: Si la placa té el costat esquerre corbat, no pot tenir cap placa a la seva esquerra
+            if (tile.curvedLeft && c > 0 && state.board[r][c - 1] !== null) {
+                showToast(`La placa "${tile.name}" té el costat esquerre corbat i no es pot encaixar per l'esquerra.`, 'error');
+                playSoundEffect('error');
+                return;
+            }
+
+            // Validació 2: No es pot col·locar cap placa a l'esquerra d'una placa d'animal corbada
+            if (c + 1 < state.cols && state.board[r][c + 1] !== null) {
+                const rightTile = TILE_CATALOG.find(t => t.id === state.board[r][c + 1].id);
+                if (rightTile && rightTile.curvedLeft) {
+                    showToast(`No es pot encaixar cap placa al costat esquerre corbat de "${rightTile.name}".`, 'error');
+                    playSoundEffect('error');
+                    return;
+                }
+            }
+
+            state.board[r][c] = { id: tileId, rotation: 0 };
+            playSoundEffect('step');
+            renderPalette();
+            renderBoard();
+        }
+
+        // Gestiona el clic en una casella segons l'eina seleccionada
+        function handleCellClick(r, c) {
+            if (state.isRunning) return;
+
+            if (state.selectedTool === 'place_robot') {
+                if (state.robot.placed && state.robot.row === r && state.robot.col === c) {
+                    state.robot.dir = (state.robot.dir + 1) % 4;
+                    playSoundEffect('turn');
+                } else {
+                    state.robot.placed = true;
+                    state.robot.row = r;
+                    state.robot.col = c;
+                    playSoundEffect('step');
+                }
+                state.initialRobot = { ...state.robot };
+                updateRobotVisualPosition();
+            } else if (state.selectedTool === 'rotate_tile') {
+                if (state.board[r][c]) {
+                    state.board[r][c].rotation = ((state.board[r][c].rotation || 0) + 90) % 360;
+                    playSoundEffect('turn');
+                    renderBoard();
+                } else {
+                    showToast('No hi ha cap placa en aquesta casella per girar.', 'info');
+                }
+            } else if (state.selectedTool === 'eraser') {
+                let removedSomething = false;
+                if (state.robot.placed && state.robot.row === r && state.robot.col === c) {
+                    state.robot.placed = false;
+                    state.initialRobot.placed = false;
+                    removedSomething = true;
+                }
+                if (state.board[r][c]) {
+                    state.board[r][c] = null;
+                    removedSomething = true;
+                }
+                if (removedSomething) {
+                    playSoundEffect('turn');
+                    renderPalette();
+                    renderBoard();
+                }
+            } else {
+                placeTileAt(r, c, state.selectedTool);
+            }
+        }
+
+        // Carrega un tauler d'exemple amb plaques d'animals, gespa i destinacions
+        function loadExampleBoard() {
+            if (state.isRunning) return;
+            state.cols = 6;
+            state.rows = 4;
+            document.getElementById('grid-size-select').value = '6x4';
+
+            state.board = Array.from({ length: 4 }, () => Array(6).fill(null));
+            state.board[1][0] = { id: 'animal_panda', rotation: 0 };
+            state.board[1][1] = { id: 'grass_plain', rotation: 0 };
+            state.board[1][2] = { id: 'grass_plain', rotation: 0 };
+            state.board[1][3] = { id: 'bamboo_forest', rotation: 0 };
+            state.board[2][1] = { id: 'grass_plain', rotation: 0 };
+            state.board[2][2] = { id: 'birthday_cake', rotation: 0 };
+            state.board[0][2] = { id: 'house_tile', rotation: 0 };
+
+            state.robot = { placed: true, row: 1, col: 0, dir: 1 };
+            state.initialRobot = { ...state.robot };
+
+            renderPalette();
+            renderBoard();
+            showToast('Exemple carregat! El Panda és a punt per anar cap al bosc de bambú.', 'success');
+        }
+
+        // Definició visual de les targetes de codi
+        const COMMAND_META = {
+            start: {
+                html: '<i class="fa-solid fa-flag text-emerald-600 text-base"></i>',
+                classes: 'h-11 px-3.5 rounded-l-full rounded-r-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            forward: {
+                html: '<i class="fa-solid fa-arrow-right text-base"></i>',
+                classes: 'w-11 h-11 rounded-xl bg-blue-600 text-white border border-blue-700'
+            },
+            left: {
+                html: '<i class="fa-solid fa-arrow-turn-up text-base"></i>',
+                classes: 'w-11 h-11 rounded-xl bg-blue-500 text-white border border-blue-600'
+            },
+            right: {
+                html: '<i class="fa-solid fa-arrow-turn-down text-base"></i>',
+                classes: 'w-11 h-11 rounded-xl bg-blue-500 text-white border border-blue-600'
+            },
+            execute: {
+                html: '<i class="fa-solid fa-flag text-lime-200 text-base"></i>',
+                classes: 'w-11 h-11 rounded-full bg-emerald-600 text-white border border-emerald-700'
+            },
+            open_paren: {
+                html: '<span class="font-extrabold text-base">(</span>',
+                classes: 'w-10 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            close_paren: {
+                html: '<span class="font-extrabold text-base">)</span>',
+                classes: 'w-10 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            x2: {
+                html: '<span class="font-extrabold text-sm">x2</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            x3: {
+                html: '<span class="font-extrabold text-sm">x3</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            x4: {
+                html: '<span class="font-extrabold text-sm">x4</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            loop2: {
+                html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>2</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            loop3: {
+                html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>3</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            },
+            loop4: {
+                html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>4</span>',
+                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+            }
+        };
+
+        // Afegeix una targeta a la seqüència (no executa automàticament)
+        function addCommand(cmd) {
+            if (state.isRunning) return;
+            state.commands.push(cmd);
+            playSoundEffect('step');
+            renderCommands();
+        }
+
+        // Elimina una targeta concreta de la seqüència
+        function removeCommand(index) {
+            if (state.isRunning) return;
+            state.commands.splice(index, 1);
+            renderCommands();
+        }
+
+        // Dibuixa les targetes programades en fila horitzontal d'esquerra a dreta
+        function renderCommands(activeIndex = -1) {
+            const container = document.getElementById('code-sequence');
+            if (!container) return;
+
+            if (state.commands.length === 0) {
+                container.innerHTML = `
+                    <div id="empty-code-msg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
+                        <i class="fa-solid fa-hand-pointer text-2xl mb-2 opacity-50"></i>
+                        <p class="text-xs">Fes clic a les targetes per construir la fila de codi d'esquerra a dreta →</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            state.commands.forEach((cmd, idx) => {
+                const meta = COMMAND_META[cmd];
+                if (!meta) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex items-center gap-1';
+
+                const card = document.createElement('button');
+                const isActive = idx === activeIndex;
+                card.className = `${meta.classes} flex items-center justify-center shadow-sm transition relative group ${
+                    isActive ? 'ring-4 ring-white scale-110 z-10' : 'hover:brightness-105'
+                }`;
+                card.innerHTML = `
+                    ${meta.html}
+                    <span class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold hidden group-hover:flex items-center justify-center shadow">×</span>
+                `;
+                card.title = 'Fes clic per eliminar aquesta targeta';
+                card.addEventListener('click', () => removeCommand(idx));
+
+                wrapper.appendChild(card);
+
+                if (idx < state.commands.length - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'text-slate-600 text-[10px] font-bold';
+                    arrow.textContent = '→';
+                    wrapper.appendChild(arrow);
+                }
+
+                container.appendChild(wrapper);
+            });
+        }
+
+        // Expandeix parèntesis, multiplicadors (x2, x3, x4) i bucles (loop2, loop3, loop4) en passos executables
+        function expandCommands(cmds) {
+            const multMap = { x2: 2, x3: 3, x4: 4 };
+            const loopMap = { loop2: 2, loop3: 3, loop4: 4 };
+
+            function parseGroup(list, startIdx = 0) {
+                let result = [];
+                let i = startIdx;
+
+                while (i < list.length) {
+                    const token = list[i];
+
+                    if (token === 'start') {
+                        i++;
+                        continue;
+                    }
+                    if (token === 'execute') {
+                        break;
+                    }
+                    if (token === 'open_paren') {
+                        const sub = parseGroup(list, i + 1);
+                        let innerSteps = sub.steps;
+                        i = sub.nextIdx;
+                        if (i < list.length && multMap[list[i]]) {
+                            const times = multMap[list[i]];
+                            for (let t = 0; t < times; t++) result.push(...innerSteps);
+                            i++;
+                        } else {
+                            result.push(...innerSteps);
+                        }
+                    } else if (token === 'close_paren') {
+                        return { steps: result, nextIdx: i + 1 };
+                    } else if (multMap[token]) {
+                        const times = multMap[token];
+                        if (result.length > 0) {
+                            const lastStep = result[result.length - 1];
+                            for (let t = 1; t < times; t++) result.push({ ...lastStep });
+                        }
+                        i++;
+                    } else if (loopMap[token]) {
+                        const times = loopMap[token];
+                        const remaining = parseGroup(list, i + 1);
+                        for (let t = 0; t < times; t++) result.push(...remaining.steps);
+                        return { steps: result, nextIdx: remaining.nextIdx };
+                    } else {
+                        result.push({ action: token, sourceIdx: i });
+                        i++;
+                    }
+                }
+                return { steps: result, nextIdx: i };
+            }
+
+            return parseGroup(cmds, 0).steps;
+        }
+
+        // Executa una acció individual del robot (pas o gir)
+        function executeSingleStep(action) {
+            if (!state.robot.placed) {
+                showToast('Primer col·loca el robot mTiny al llençol!', 'error');
+                return false;
+            }
+
+            if (action === 'left') {
+                state.robot.dir = (state.robot.dir + 3) % 4;
+                playSoundEffect('turn');
+                updateRobotVisualPosition();
+                return true;
+            }
+
+            if (action === 'right') {
+                state.robot.dir = (state.robot.dir + 1) % 4;
+                playSoundEffect('turn');
+                updateRobotVisualPosition();
+                return true;
+            }
+
+            if (action === 'forward') {
+                const deltas = [
+                    { dr: -1, dc: 0 }, // 0: Nord
+                    { dr: 0, dc: 1 },  // 1: Est
+                    { dr: 1, dc: 0 },  // 2: Sud
+                    { dr: 0, dc: -1 }  // 3: Oest
+                ];
+                const nextR = state.robot.row + deltas[state.robot.dir].dr;
+                const nextC = state.robot.col + deltas[state.robot.dir].dc;
+
+                if (nextR < 0 || nextR >= state.rows || nextC < 0 || nextC >= state.cols) {
+                    showToast('Atenció! En mTiny ha arribat al límit del llençol.', 'error');
+                    playSoundEffect('error');
+                    return false;
+                }
+
+                state.robot.row = nextR;
+                state.robot.col = nextC;
+                updateRobotVisualPosition();
+
+                // Reacció sonora en trepitjar una placa
+                const landedCell = state.board[nextR][nextC];
+                if (landedCell) {
+                    const tile = TILE_CATALOG.find(t => t.id === landedCell.id);
+                    if (tile && tile.sound) {
+                        playSoundEffect(tile.sound);
+                        const robotEl = document.getElementById('mtiny-robot');
+                        robotEl.classList.remove('robot-happy');
+                        void robotEl.offsetWidth;
+                        robotEl.classList.add('robot-happy');
+                    } else {
+                        playSoundEffect('step');
+                    }
+                } else {
+                    playSoundEffect('step');
+                }
+                return true;
+            }
+
+            return true;
+        }
+
+        // Control directe manual des dels botons inferiors
+        function moveRobotManual(action) {
+            if (state.isRunning) return;
+            if (!state.robot.placed) {
+                showToast('Selecciona l’eina mTiny i col·loca el robot sobre una casella primer.', 'info');
+                return;
+            }
+            executeSingleStep(action);
+        }
+
+        // Executa tota la seqüència programada pas a pas
+        async function runSequence() {
+            if (state.isRunning) return;
+
+            if (!state.robot.placed) {
+                showToast('Col·loca el robot mTiny al llençol abans d’executar el programa!', 'error');
+                playSoundEffect('error');
+                return;
+            }
+
+            if (state.commands.length === 0) {
+                showToast('Afegeix targetes de codi a la seqüència primer.', 'info');
+                return;
+            }
+
+            const steps = expandCommands(state.commands);
+            if (steps.length === 0) {
+                showToast('No hi ha moviments per executar dins de la seqüència.', 'info');
+                return;
+            }
+
+            state.isRunning = true;
+            const runBtn = document.getElementById('btn-run-code');
+            runBtn.disabled = true;
+
+            // Desa la posició des d'on comença aquesta execució
+            state.initialRobot = { ...state.robot };
+
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                renderCommands(step.sourceIdx);
+                const ok = executeSingleStep(step.action);
+                if (!ok) break;
+                await new Promise(resolve => setTimeout(resolve, 550));
+            }
+
+            renderCommands(-1);
+            state.isRunning = false;
+            runBtn.disabled = false;
+            showToast('Execució finalitzada!', 'success');
+        }
+
+        // Configuració dels esdeveniments de la interfície en carregar la pàgina
+        window.onload = function () {
+            initBoard(6, 4, false);
+            selectTool('place_robot');
+            renderCommands();
+
+            document.getElementById('tool-place-robot').addEventListener('click', () => selectTool('place_robot'));
+            document.getElementById('tool-rotate-tile').addEventListener('click', () => selectTool('rotate_tile'));
+            document.getElementById('tool-eraser').addEventListener('click', () => selectTool('eraser'));
+
+            document.getElementById('grid-size-select').addEventListener('change', (e) => {
+                if (state.isRunning) return;
+                const [cols, rows] = e.target.value.split('x').map(Number);
+                initBoard(cols, rows, true);
+            });
+
+            document.getElementById('btn-preset').addEventListener('click', loadExampleBoard);
+
+            document.getElementById('btn-clear-board').addEventListener('click', () => {
+                if (state.isRunning) return;
+                initBoard(state.cols, state.rows, false);
+                showToast('S’ha netejat tot el llençol.', 'info');
+            });
+
+            document.getElementById('btn-clear-code').addEventListener('click', () => {
+                if (state.isRunning) return;
+                state.commands = [];
+                renderCommands();
+            });
+
+            document.getElementById('btn-run-code').addEventListener('click', runSequence);
+
+            document.getElementById('btn-reset-pos').addEventListener('click', () => {
+                if (state.isRunning) return;
+                if (state.initialRobot.placed) {
+                    state.robot = { ...state.initialRobot };
+                    updateRobotVisualPosition();
+                    playSoundEffect('turn');
+                    showToast('mTiny ha tornat a la posició inicial.', 'info');
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                renderBoard();
+            });
+        };
+    </script>
+</body>
+</html>
