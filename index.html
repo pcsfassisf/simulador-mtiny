@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Robot de Terra - Makeblock</title>
+    <title>Simulador de Tauler mTiny - Makeblock</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome per a icones -->
@@ -124,15 +124,15 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-slate-100 leading-tight">ESTUDI DE  <span class="text-blue-400">TAULERS</span></h1>
-                <p class="text-xs text-slate-400">Dissenya el tauler i programa el recorregut del robot</p>
+                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de Taulers <span class="text-blue-400">mTiny</span></h1>
+                <p class="text-xs text-slate-400">Dissenya la catifa i programa el recorregut del panda</p>
             </div>
         </div>
 
         <!-- Controls de la graella i eines ràpides -->
         <div class="flex items-center gap-2 flex-wrap">
             <div class="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
-                <span class="text-xs font-semibold text-slate-300 px-2">Mida tauler:</span>
+                <span class="text-xs font-semibold text-slate-300 px-2">Mida Llençol:</span>
                 <select id="grid-size-select" class="bg-slate-900 text-xs font-bold text-slate-100 py-1 px-2 rounded shadow-sm border border-slate-700 focus:outline-none">
                     <option value="4x4">4 x 4 (Compacte)</option>
                     <option value="5x5">5 x 5 (Estàndard)</option>
@@ -146,7 +146,7 @@
             </button>
 
             <button id="btn-clear-board" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-semibold rounded-lg border border-rose-800 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-trash-can"></i> Netejar tauler
+                <i class="fa-solid fa-trash-can"></i> Netejar Llençol
             </button>
         </div>
     </header>
@@ -187,7 +187,7 @@
                 </div>
             </aside>
 
-            <!-- ZONA CENTRAL: Tauler en blanc (Graella interactiva) -->
+            <!-- ZONA CENTRAL: Llençol en blanc (Graella interactiva) -->
             <section class="flex-1 bg-slate-950 relative flex flex-col items-center justify-center p-3 overflow-auto min-h-0">
                 
                 <!-- Barra superior contextual: Control directe -->
@@ -246,7 +246,7 @@
             </section>
         </div>
 
-        <!-- PANELL INFERIOR HORITZONTAL: Targetes de Programació Robot -->
+        <!-- PANELL INFERIOR HORITZONTAL: Targetes de Programació mTiny -->
         <section class="w-full bg-slate-900 border-t-2 border-slate-800 flex flex-col z-20 shrink-0 shadow-[0_-10px_25px_rgba(0,0,0,0.45)]">
             
             <!-- Barra superior de la zona de programació: Títol, totes les targetes en línia i botons d'execució -->
@@ -258,7 +258,7 @@
                         <i class="fa-solid fa-layer-group text-sm"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació</h2>
+                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació mTiny</h2>
                         <span class="text-[10px] text-slate-400">Tria les targetes d'esquerra a dreta →</span>
                     </div>
                 </div>
@@ -419,12 +419,12 @@
 
             // --- 3. PLAQUES TEMÀTIQUES ÚNIQUES (1 de cada) ---
             {
-                id: 'food_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn',
+                id: 'food_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn amb os',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="18" y="44" width="64" height="12" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="18" cy="43" r="6" fill="#fef3c7"/><circle cx="18" cy="57" r="6" fill="#fef3c7"/><circle cx="82" cy="43" r="6" fill="#fef3c7"/><circle cx="82" cy="57" r="6" fill="#fef3c7"/><rect x="28" y="30" width="44" height="40" rx="16" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/><ellipse cx="45" cy="42" rx="10" ry="4" fill="#fca5a5" opacity="0.6"/></svg>`
             },
             {
-                id: 'bamboo_forest', category: 'Plaques Úniques (1 de cada)', name: 'Bambú',
+                id: 'bamboo_forest', category: 'Plaques Úniques (1 de cada)', name: 'Bosc de bambú',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="24" y="15" width="7" height="70" rx="2" fill="#2b9348"/><rect x="46" y="10" width="8" height="75" rx="2" fill="#007f5f"/><rect x="68" y="18" width="7" height="67" rx="2" fill="#2b9348"/><line x1="22" y1="35" x2="33" y2="35" stroke="#aacc00" stroke-width="3"/><line x1="22" y1="60" x2="33" y2="60" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="30" x2="56" y2="30" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="55" x2="56" y2="55" stroke="#aacc00" stroke-width="3"/><ellipse cx="60" cy="25" rx="8" ry="3.5" transform="rotate(-25 60 25)" fill="#55a630"/><ellipse cx="36" cy="45" rx="8" ry="3.5" transform="rotate(20 36 45)" fill="#55a630"/></svg>`
             },
@@ -434,7 +434,7 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><polygon points="72,50 88,34 88,66" fill="#0284c7"/><ellipse cx="46" cy="50" rx="30" ry="18" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/><circle cx="30" cy="46" r="3.5" fill="#0f172a"/><path d="M44 38q-6 12 0 24M55 40q-5 10 0 20" stroke="#e0f2fe" stroke-width="2.5" fill="none"/></svg>`
             },
             {
-                id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: 'Blat d'indi',
+                id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: 'Pinya de blat de moro',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><ellipse cx="50" cy="46" rx="15" ry="28" fill="#facc15" stroke="#ca8a04" stroke-width="2"/><path d="M38 35h24M36 46h28M38 57h24M45 22v48M55 22v48" stroke="#eab308" stroke-width="2"/><path d="M35 45Q22 65 50 80Q40 60 35 45Z" fill="#22c55e"/><path d="M65 45Q78 65 50 80Q60 60 65 45Z" fill="#16a34a"/></svg>`
             },
@@ -444,17 +444,17 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="76" width="60" height="8" rx="3" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/><rect x="46" y="38" width="8" height="38" fill="#facc15"/><line x1="30" y1="38" x2="30" y2="76" stroke="#94a3b8" stroke-width="2.5"/><line x1="70" y1="38" x2="70" y2="76" stroke="#94a3b8" stroke-width="2.5"/><ellipse cx="30" cy="58" rx="8" ry="5" fill="#ffffff" stroke="#a855f7" stroke-width="2"/><circle cx="24" cy="53" r="3.5" fill="#ffffff" stroke="#a855f7" stroke-width="1.5"/><ellipse cx="70" cy="54" rx="8" ry="5" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/><circle cx="76" cy="49" r="3.5" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/><polygon points="50,14 16,38 84,38" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><polygon points="50,14 34,38 66,38" fill="#facc15"/><circle cx="50" cy="12" r="4" fill="#facc15"/></svg>`
             },
             {
-                id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota',
+                id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota de futbol',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#1e293b" stroke-width="3"/><polygon points="50,38 61,46 57,59 43,59 39,46" fill="#1e293b"/><line x1="50" y1="38" x2="50" y2="22" stroke="#1e293b" stroke-width="2.5"/><line x1="61" y1="46" x2="76" y2="41" stroke="#1e293b" stroke-width="2.5"/><line x1="57" y1="59" x2="66" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="43" y1="59" x2="34" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="39" y1="46" x2="24" y2="41" stroke="#1e293b" stroke-width="2.5"/></svg>`
             },
             {
-                id: 'jack_in_box', category: 'Plaques Úniques (1 de cada)', name: 'Pallasso',
+                id: 'jack_in_box', category: 'Plaques Úniques (1 de cada)', name: 'Pallasso caixa regal',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'music', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="30" y="56" width="40" height="28" rx="3" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><line x1="50" y1="56" x2="50" y2="84" stroke="#facc15" stroke-width="5"/><path d="M46 56L54 50L46 44L54 38" stroke="#64748b" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><circle cx="50" cy="29" r="3" fill="#ef4444"/><polygon points="40,19 60,19 50,8" fill="#3b82f6"/></svg>`
             },
             {
-                id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Banyera',
+                id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Banyera amb dutxa',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M74 52V24Q74 16 64 16H58" stroke="#64748b" stroke-width="3.5" fill="none"/><polygon points="52,16 62,16 60,23 54,23" fill="#94a3b8"/><line x1="55" y1="27" x2="53" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><line x1="59" y1="27" x2="61" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><path d="M20 52H80V64Q80 78 62 78H38Q20 78 20 64Z" fill="#ffffff" stroke="#0284c7" stroke-width="2.5"/><rect x="16" y="48" width="68" height="6" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></svg>`
             },
@@ -469,7 +469,7 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="34" width="8" height="44" rx="2" fill="#92400e"/><rect x="72" y="46" width="8" height="32" rx="2" fill="#92400e"/><rect x="28" y="54" width="44" height="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><rect x="42" y="52" width="30" height="16" rx="3" fill="#8b5cf6"/><rect x="29" y="47" width="14" height="8" rx="3" fill="#fef08a"/><rect x="20" y="66" width="60" height="6" fill="#b45309"/></svg>`
             },
             {
-                id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: "Pastís",
+                id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: "Pastís d'aniversari",
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="24" y="54" width="52" height="24" rx="4" fill="#f472b6" stroke="#be185d" stroke-width="2"/><rect x="32" y="38" width="36" height="16" rx="3" fill="#fbcfe8" stroke="#be185d" stroke-width="2"/><rect x="48" y="24" width="4" height="14" fill="#38bdf8"/><path d="M50 14Q54 20 50 24Q46 20 50 14Z" fill="#facc15"/></svg>`
             },
@@ -1252,7 +1252,7 @@
         // Executa una acció individual del robot (pas o gir)
         function executeSingleStep(action) {
             if (!state.robot.placed) {
-                showToast('Primer col·loca el robot mTiny al tauler!', 'error');
+                showToast('Primer col·loca el robot mTiny al llençol!', 'error');
                 return false;
             }
 
@@ -1283,7 +1283,7 @@
                 const nextC = state.robot.col + deltas[state.robot.dir].dc;
 
                 if (nextR < 0 || nextR >= state.rows || nextC < 0 || nextC >= state.cols) {
-                    showToast('Atenció! En mTiny ha arribat al límit del tauler.', 'error');
+                    showToast('Atenció! En mTiny ha arribat al límit del llençol.', 'error');
                     playSoundEffect('error');
                     return false;
                 }
@@ -1329,7 +1329,7 @@
             if (state.isRunning) return;
 
             if (!state.robot.placed) {
-                showToast('Col·loca el robot mTiny al tauler abans d’executar el programa!', 'error');
+                showToast('Col·loca el robot mTiny al llençol abans d’executar el programa!', 'error');
                 playSoundEffect('error');
                 return;
             }
@@ -1386,7 +1386,7 @@
             document.getElementById('btn-clear-board').addEventListener('click', () => {
                 if (state.isRunning) return;
                 initBoard(state.cols, state.rows, false);
-                showToast('S’ha netejat tot el tauler.', 'info');
+                showToast('S’ha netejat tot el llençol.', 'info');
             });
 
             document.getElementById('btn-clear-code').addEventListener('click', () => {
