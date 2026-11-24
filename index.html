@@ -171,10 +171,10 @@
                     </h2>
                 </div>
 
-                <!-- Eines especials (Col·locar robot / Treure placa) -->
+                <!-- Eines especials (r robot / Treure placa) -->
                 <div class="p-2 border-b border-slate-800 grid grid-cols-2 gap-1.5 bg-slate-900/80">
                     <button id="tool-place-robot" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-blue-500 bg-blue-950/70 text-blue-300 font-semibold text-[11px] shadow-sm transition">
-                        <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i> Col·loca robot
+                        <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i>  robot
                     </button>
                     <button id="tool-eraser" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
                         <i class="fa-solid fa-eraser mb-0.5 text-xs"></i> Treure
@@ -503,7 +503,7 @@
             isRunning: false
         };
 
-        // Compta quantes unitats d'una placa hi ha actualment col·locades al tauler
+        // Compta quantes unitats d'una placa hi ha actualment des al tauler
         function getTilePlacedCount(tileId) {
             let count = 0;
             for (let r = 0; r < state.rows; r++) {
@@ -560,7 +560,7 @@
                     // Selecció per clic
                     btn.addEventListener('click', () => {
                         if (isDepleted) {
-                            showToast(`Ja has col·locat el màxim de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
+                            showToast(`Ja has t el màxim de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
                             return;
                         }
                         selectTool(tile.id);
@@ -821,7 +821,7 @@
             `;
         }
 
-        // Canvia l'eina activa (col·locar placa, girar, esborrar o posicionar robot)
+        // Canvia l'eina activa (r placa, girar, esborrar o posicionar robot)
         function selectTool(toolId) {
             state.selectedTool = toolId;
 
@@ -948,7 +948,7 @@
             requestAnimationFrame(() => updateRobotVisualPosition(tileSize));
         }
 
-        // Gestiona la col·locació d'una placa validant quantitat màxima i encaix corbat esquerre
+        // Gestiona la ció d'una placa validant quantitat màxima i encaix corbat esquerre
         function placeTileAt(r, c, tileId) {
             const tile = TILE_CATALOG.find(t => t.id === tileId);
             if (!tile) return;
@@ -977,7 +977,7 @@
                 return;
             }
 
-            // Validació 2: No es pot col·locar cap placa a l'esquerra d'una placa d'animal corbada
+            // Validació 2: No es pot r cap placa a l'esquerra d'una placa d'animal corbada
             if (c + 1 < state.cols && state.board[r][c + 1] !== null) {
                 const rightTile = TILE_CATALOG.find(t => t.id === state.board[r][c + 1].id);
                 if (rightTile && rightTile.curvedLeft) {
@@ -1252,7 +1252,7 @@
         // Executa una acció individual del robot (pas o gir)
         function executeSingleStep(action) {
             if (!state.robot.placed) {
-                showToast('Primer col·loca el robot al llençol!', 'error');
+                showToast('Primer col·loca el robot al tauler!', 'error');
                 return false;
             }
 
