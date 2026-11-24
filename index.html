@@ -1252,7 +1252,7 @@
         // Executa una acció individual del robot (pas o gir)
         function executeSingleStep(action) {
             if (!state.robot.placed) {
-                showToast('Primer col·loca el robot mTiny al llençol!', 'error');
+                showToast('Primer col·loca el robot al llençol!', 'error');
                 return false;
             }
 
@@ -1318,7 +1318,7 @@
         function moveRobotManual(action) {
             if (state.isRunning) return;
             if (!state.robot.placed) {
-                showToast('Selecciona l’eina mTiny i col·loca el robot sobre una casella primer.', 'info');
+                showToast('Selecciona l’eina i col·loca el robot sobre una casella primer.', 'info');
                 return;
             }
             executeSingleStep(action);
@@ -1329,7 +1329,7 @@
             if (state.isRunning) return;
 
             if (!state.robot.placed) {
-                showToast('Col·loca el robot mTiny al llençol abans d’executar el programa!', 'error');
+                showToast('Col·loca el robot al llençol abans d’executar el programa!', 'error');
                 playSoundEffect('error');
                 return;
             }
