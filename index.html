@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Tauler mTiny - Makeblock</title>
+    <title>Simulador de Tauler</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome per a icones -->
@@ -21,7 +21,7 @@
             font-family: 'Rubik', sans-serif;
         }
         
-        /* Efecte de peces de puzle / plaques de cartró mTiny */
+        /* Efecte de peces de puzle / plaques de cartró */
         .mtiny-tile {
             transition: transform 0.15s ease;
         }
@@ -124,8 +124,8 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de Taulers <span class="text-blue-400">mTiny</span></h1>
-                <p class="text-xs text-slate-400">Dissenya la catifa i programa el recorregut del panda</p>
+                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de <span class="text-blue-400">Taulers</span></h1>
+                <p class="text-xs text-slate-400">Dissenya la catifa i programa el recorregut del robot</p>
             </div>
         </div>
 
@@ -146,7 +146,7 @@
             </button>
 
             <button id="btn-clear-board" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-semibold rounded-lg border border-rose-800 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-trash-can"></i> Netejar Llençol
+                <i class="fa-solid fa-trash-can"></i> Netejar Tauler
             </button>
         </div>
     </header>
@@ -160,10 +160,10 @@
     <!-- Cos Principal: Dalt (Catàleg + Llençol) i Baix (Barra de Programació Horitzontal) -->
     <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- ZONA SUPERIOR: Catàleg a l'esquerra + Llençol al centre -->
+        <!-- ZONA SUPERIOR: Catàleg a l'esquerra + Tauler al centre -->
         <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
             
-            <!-- PANELL ESQUERRE: Catàleg de Plaques mTiny -->
+            <!-- PANELL ESQUERRE: Catàleg de Plaques  -->
             <aside class="w-full lg:w-[390px] xl:w-[430px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col z-10 shrink-0 max-h-[28vh] lg:max-h-full">
                 <div class="px-3 py-2 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
                     <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
@@ -258,7 +258,7 @@
                         <i class="fa-solid fa-layer-group text-sm"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació mTiny</h2>
+                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació Robot</h2>
                         <span class="text-[10px] text-slate-400">Tria les targetes d'esquerra a dreta →</span>
                     </div>
                 </div>
