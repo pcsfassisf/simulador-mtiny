@@ -8,29 +8,51 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome per a icones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Fredoka per un toc educatiu i amigable, i Inter per a la UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Rubik per a un estil robòtic educatiu, modern i arrodonit -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Rubik', sans-serif;
             background-color: #0b1120;
             user-select: none;
         }
         h1, h2, .brand-font {
-            font-family: 'Fredoka', sans-serif;
+            font-family: 'Rubik', sans-serif;
         }
         
         /* Efecte de peces de puzle / plaques de cartró mTiny */
         .mtiny-tile {
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45), 0 4px 8px rgba(0,0,0,0.45);
+            transition: transform 0.15s ease;
         }
         .mtiny-tile:hover {
             transform: scale(1.03);
-            z-index: 10;
+            z-index: 20 !important;
         }
-        /* Forma d'encaix corbat al costat esquerre (plaques inicials d'animals) */
+        .puzzle-piece-svg {
+            position: absolute;
+            top: -15%;
+            left: -15%;
+            width: 130%;
+            height: 130%;
+            pointer-events: none;
+            overflow: visible;
+        }
+        .tile-inner-art {
+            position: relative;
+            z-index: 2;
+            width: 82%;
+            height: 82%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tile-inner-art svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        /* Forma d'encaix corbat al costat esquerre a la paleta */
         .curved-left-tile {
             border-top-left-radius: 999px !important;
             border-bottom-left-radius: 999px !important;
@@ -50,13 +72,13 @@
             filter: drop-shadow(0 8px 12px rgba(0,0,0,0.55));
         }
 
-        /* Animació d'expressió d'alegria del robot */
+        /* Animació d'expressió d'alegria del robot (aplicada al SVG intern per no perdre la rotació) */
         @keyframes bounce-happy {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-10px) scale(1.1); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.18); }
         }
-        .robot-happy {
-            animation: bounce-happy 0.5s ease-in-out 2;
+        .robot-happy svg {
+            animation: bounce-happy 0.45s ease-in-out 1;
         }
 
         /* Barra de desplaçament personalitzada en mode fosc */
@@ -82,9 +104,24 @@
     <!-- Capçalera Superior -->
     <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between shadow-md z-20 gap-2">
         <div class="flex items-center gap-3">
-            <!-- Logotip mTiny estilitzat -->
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/40">
-                <i class="fa-solid fa-robot text-xl"></i>
+            <!-- Logotip personalitzat del robot panda mTiny -->
+            <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/40 border border-blue-400/30 p-1.5 shrink-0">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                    <!-- Orelles negres de panda -->
+                    <circle cx="24" cy="24" r="13" fill="#0f172a"/>
+                    <circle cx="76" cy="24" r="13" fill="#0f172a"/>
+                    <!-- Cap/carcassa blanca arrodonida -->
+                    <rect x="14" y="20" width="72" height="64" rx="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+                    <!-- Visor frontal fosc -->
+                    <rect x="22" y="34" width="56" height="32" rx="14" fill="#0f172a"/>
+                    <!-- Ulls digitals blaus expressius de mTiny -->
+                    <circle cx="38" cy="50" r="8" fill="#38bdf8"/>
+                    <circle cx="35" cy="47" r="2.5" fill="#ffffff"/>
+                    <circle cx="62" cy="50" r="8" fill="#38bdf8"/>
+                    <circle cx="59" cy="47" r="2.5" fill="#ffffff"/>
+                    <!-- Somriure LED -->
+                    <path d="M45 56 Q50 61 55 56" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" fill="none"/>
+                </svg>
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de Taulers <span class="text-blue-400">mTiny</span></h1>
@@ -114,188 +151,199 @@
         </div>
     </header>
 
-    <!-- Missatge flotant (Substitut d'alert) -->
-    <div id="toast-notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-300">
-        <div id="toast-content" class="bg-slate-800 text-slate-100 border border-slate-700 px-4 py-2.5 rounded-full shadow-2xl text-sm font-medium flex items-center gap-2">
-            <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
-            <span id="toast-text">Missatge del sistema</span>
-        </div>
+    <!-- Notificació emergent (Toast) -->
+    <div id="toast-notification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700 text-slate-100 px-4 py-2 rounded-full shadow-xl text-xs font-medium flex items-center gap-2 opacity-0 pointer-events-none transition-opacity duration-300">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
+        <span id="toast-text">Missatge</span>
     </div>
 
-    <!-- Cos Principal (3 columnes en escriptori, apilat en mòbil) -->
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <!-- Cos Principal: Dalt (Catàleg + Llençol) i Baix (Barra de Programació Horitzontal) -->
+    <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- PANELL ESQUERRE: Catàleg de Plaques mTiny -->
-        <aside class="w-full lg:w-80 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col z-10 shrink-0 max-h-[32vh] lg:max-h-full">
-            <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
-                <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-puzzle-piece text-blue-400"></i> Plaques Disponibles
-                </h2>
-            </div>
-
-            <!-- Eines especials (Posicionar mTiny / Girar placa / Esborrar placa) -->
-            <div class="p-2.5 border-b border-slate-800 grid grid-cols-3 gap-1.5 bg-slate-900/80">
-                <button id="tool-place-robot" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-blue-500 bg-blue-950/70 text-blue-300 font-semibold text-[11px] shadow-sm transition">
-                    <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i> mTiny
-                </button>
-                <button id="tool-rotate-tile" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
-                    <i class="fa-solid fa-rotate-right mb-0.5 text-xs"></i> Girar Placa
-                </button>
-                <button id="tool-eraser" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
-                    <i class="fa-solid fa-eraser mb-0.5 text-xs"></i> Treure
-                </button>
-            </div>
-
-            <!-- Llista de categories i plaques -->
-            <div id="tiles-palette" class="p-3 overflow-y-auto flex-1 space-y-4">
-                <!-- Es genera dinàmicament amb JavaScript -->
-            </div>
-        </aside>
-
-        <!-- ZONA CENTRAL: Llençol en blanc (Graella interactiva) -->
-        <section class="flex-1 bg-slate-950 relative flex flex-col items-center justify-center p-4 overflow-auto">
+        <!-- ZONA SUPERIOR: Catàleg a l'esquerra + Llençol al centre -->
+        <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
             
-            <!-- Instrucció contextual superior -->
-            <div class="mb-3 bg-slate-900/90 backdrop-blur px-4 py-1.5 rounded-full shadow-md border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
-                <span id="active-tool-badge" class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
-                <span id="active-tool-label">Eina activa: <strong>Col·locar / Girar mTiny</strong> (Fes clic en una casella)</span>
-            </div>
-
-            <!-- Contenidor del Llençol -->
-            <div id="canvas-wrapper" class="bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-2xl border-4 border-slate-800 relative flex items-center justify-center">
-                <!-- La graella on es col·loquen les plaques -->
-                <div id="board-grid" class="grid gap-1.5 bg-slate-950/90 p-2 rounded-xl border-2 border-dashed border-slate-700 relative">
-                    <!-- Caselles generades dinàmicament -->
+            <!-- PANELL ESQUERRE: Catàleg de Plaques mTiny -->
+            <aside class="w-full lg:w-[390px] xl:w-[430px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col z-10 shrink-0 max-h-[28vh] lg:max-h-full">
+                <div class="px-3 py-2 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+                    <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-puzzle-piece text-blue-400"></i> Plaques Disponibles
+                    </h2>
                 </div>
 
-                <!-- El Robot mTiny (Superposat absolutament sobre el tauler) -->
-                <div id="mtiny-robot" class="absolute pointer-events-none flex items-center justify-center hidden" style="width: 60px; height: 60px;">
-                    <!-- SVG personalitzat del robot mTiny vist des de dalt (Vista zenital) -->
-                    <svg viewBox="0 0 100 100" class="w-full h-full">
-                        <!-- Rodes laterals vistes des de dalt -->
-                        <rect x="8" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
-                        <rect x="83" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
-                        <!-- Petits connectors magnètics laterals (braços) -->
-                        <rect x="11" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
-                        <rect x="84" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
-                        <!-- Carcassa superior blanca arrodonida (Vista zenital del cos quadrat) -->
-                        <rect x="16" y="16" width="68" height="68" rx="22" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
-                        <!-- Detall de relleu interior de la tapa superior -->
-                        <rect x="22" y="22" width="56" height="56" rx="17" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
-                        <!-- Orelles de Panda vistes des de dalt (situades a la part davantera / Nord) -->
-                        <ellipse cx="29" cy="24" rx="10" ry="7" transform="rotate(-25 29 24)" fill="#1e293b"/>
-                        <ellipse cx="71" cy="24" rx="10" ry="7" transform="rotate(25 71 24)" fill="#1e293b"/>
-                        <!-- Visera / Franja frontal superior del visor -->
-                        <path d="M32 17 Q50 13 68 17" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-                        <!-- Botó d'encesa central a la part superior -->
-                        <circle cx="50" cy="52" r="7" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
-                        <circle cx="50" cy="52" r="2.5" fill="#0284c7"/>
-                        <!-- Franja posterior blava característica de Makeblock -->
-                        <path d="M32 76 Q50 81 68 76" stroke="#2563eb" stroke-width="4" stroke-linecap="round" fill="none"/>
-                        <!-- Fletxa vermella frontal que indica cap on mira i avança -->
-                        <polygon points="50,3 42,13 58,13" fill="#ef4444" stroke="#ffffff" stroke-width="1"/>
-                    </svg>
+                <!-- Eines especials (Posicionar mTiny / Girar placa / Esborrar placa) -->
+                <div class="p-2 border-b border-slate-800 grid grid-cols-3 gap-1.5 bg-slate-900/80">
+                    <button id="tool-place-robot" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-blue-500 bg-blue-950/70 text-blue-300 font-semibold text-[11px] shadow-sm transition">
+                        <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i> mTiny
+                    </button>
+                    <button id="tool-rotate-tile" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
+                        <i class="fa-solid fa-rotate-right mb-0.5 text-xs"></i> Girar Placa
+                    </button>
+                    <button id="tool-eraser" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
+                        <i class="fa-solid fa-eraser mb-0.5 text-xs"></i> Treure
+                    </button>
+                </div>
+
+                <!-- Llista de categories i plaques -->
+                <div id="tiles-palette" class="p-2 overflow-y-auto flex-1 space-y-2">
+                    <!-- Es genera dinàmicament amb JavaScript -->
+                </div>
+            </aside>
+
+            <!-- ZONA CENTRAL: Llençol en blanc (Graella interactiva) -->
+            <section class="flex-1 bg-slate-950 relative flex flex-col items-center justify-center p-3 overflow-auto min-h-0">
+                
+                <!-- Barra superior contextual + Control directe -->
+                <div class="mb-2 flex flex-wrap items-center justify-center gap-2">
+                    <div class="bg-slate-900/90 backdrop-blur px-3.5 py-1 rounded-full shadow-md border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
+                        <span id="active-tool-badge" class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
+                        <span id="active-tool-label">Eina activa: <strong>Col·locar / Girar mTiny</strong> (Fes clic en una casella)</span>
+                    </div>
+
+                    <!-- Controls manuals ràpids -->
+                    <div class="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-full shadow-md border border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-0.5">Directe:</span>
+                        <button onclick="moveRobotManual('left')" class="w-6 h-6 rounded-full bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition text-xs" title="Girar Esquerra">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                        <button onclick="moveRobotManual('forward')" class="w-6 h-6 rounded-full bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 flex items-center justify-center transition text-xs" title="Avançar">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button onclick="moveRobotManual('right')" class="w-6 h-6 rounded-full bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition text-xs" title="Girar Dreta">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenidor del Llençol -->
+                <div id="canvas-wrapper" class="bg-slate-900 p-3 sm:p-5 rounded-2xl shadow-2xl border-4 border-slate-800 relative flex items-center justify-center">
+                    <!-- La graella on es col·loquen les plaques -->
+                    <div id="board-grid" class="grid gap-0 bg-slate-950/90 p-3 rounded-xl border-2 border-dashed border-slate-700 relative">
+                        <!-- Caselles generades dinàmicament -->
+                    </div>
+
+                    <!-- El Robot mTiny (Superposat absolutament sobre el tauler) -->
+                    <div id="mtiny-robot" class="absolute pointer-events-none flex items-center justify-center hidden" style="width: 60px; height: 60px;">
+                        <!-- SVG personalitzat del robot mTiny vist des de dalt (Vista zenital) -->
+                        <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                            <!-- Rodes laterals vistes des de dalt -->
+                            <rect x="8" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                            <rect x="83" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                            <!-- Petits connectors magnètics laterals (braços) -->
+                            <rect x="11" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
+                            <rect x="84" y="46" width="5" height="8" rx="1.5" fill="#94a3b8"/>
+                            <!-- Carcassa superior blanca arrodonida (Vista zenital del cos quadrat) -->
+                            <rect x="16" y="18" width="68" height="68" rx="22" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+                            <!-- Detall de relleu interior de la tapa superior -->
+                            <rect x="22" y="24" width="56" height="56" rx="17" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <!-- Orelles de Panda vistes des de dalt (situades a la part davantera / Nord) -->
+                            <ellipse cx="29" cy="26" rx="10" ry="7" transform="rotate(-25 29 26)" fill="#1e293b"/>
+                            <ellipse cx="71" cy="26" rx="10" ry="7" transform="rotate(25 71 26)" fill="#1e293b"/>
+                            <!-- Visera / Franja frontal superior del visor -->
+                            <path d="M32 19 Q50 15 68 19" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                            <!-- Botó d'encesa central a la part superior -->
+                            <circle cx="50" cy="54" r="7" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
+                            <circle cx="50" cy="54" r="2.5" fill="#0284c7"/>
+                            <!-- Franja posterior blava característica de Makeblock -->
+                            <path d="M32 78 Q50 83 68 78" stroke="#2563eb" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Fletxa vermella frontal ben gran i contrastada que indica cap on mira i avança -->
+                            <path d="M50,-4 L35,14 L44,14 L44,24 L56,24 L56,14 L65,14 Z" fill="#ef4444" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PANELL INFERIOR HORITZONTAL: Targetes de Programació mTiny -->
+        <section class="w-full bg-slate-900 border-t-2 border-slate-800 flex flex-col z-20 shrink-0 shadow-[0_-10px_25px_rgba(0,0,0,0.45)]">
+            
+            <!-- Barra superior de la zona de programació: Títol, totes les targetes en línia i botons d'execució -->
+            <div class="px-4 py-2.5 bg-slate-950/70 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                
+                <!-- Títol -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-700/70 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-layer-group text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació mTiny</h2>
+                        <span class="text-[10px] text-slate-400">Tria les targetes d'esquerra a dreta →</span>
+                    </div>
+                </div>
+
+                <!-- Botonera unificada de totes les targetes físiques en horitzontal -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <!-- Grup 1: Inici i Moviments -->
+                    <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
+                        <button onclick="addCommand('start')" class="h-11 px-3.5 flex items-center justify-center rounded-l-full rounded-r-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 shadow-sm transition active:scale-95" title="Inici de programa">
+                            <i class="fa-solid fa-flag text-emerald-600 text-base"></i>
+                        </button>
+                        <button onclick="addCommand('forward')" class="w-11 h-11 flex items-center justify-center rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Avançar">
+                            <i class="fa-solid fa-arrow-right text-base"></i>
+                        </button>
+                        <button onclick="addCommand('left')" class="w-11 h-11 flex items-center justify-center rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Esquerra">
+                            <i class="fa-solid fa-arrow-turn-up text-base"></i>
+                        </button>
+                        <button onclick="addCommand('right')" class="w-11 h-11 flex items-center justify-center rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Dreta">
+                            <i class="fa-solid fa-arrow-turn-down text-base"></i>
+                        </button>
+                        <button onclick="addCommand('execute')" class="w-11 h-11 flex items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 shadow-sm transition active:scale-95" title="Final / Bandera verda">
+                            <i class="fa-solid fa-flag text-lime-200 text-base"></i>
+                        </button>
+                    </div>
+
+                    <!-- Grup 2: Parèntesis, Multiplicadors i Bucles -->
+                    <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
+                        <button onclick="addCommand('open_paren')" class="w-9 h-11 flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Obre parèntesi">
+                            (
+                        </button>
+                        <button onclick="addCommand('close_paren')" class="w-9 h-11 flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Tanca parèntesi">
+                            )
+                        </button>
+                        <button onclick="addCommand('x2')" class="w-10 h-11 flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x2">
+                            x2
+                        </button>
+                        <button onclick="addCommand('x3')" class="w-10 h-11 flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x3">
+                            x3
+                        </button>
+                        <button onclick="addCommand('x4')" class="w-10 h-11 flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x4">
+                            x4
+                        </button>
+                        <div class="w-px h-7 bg-slate-700 mx-0.5"></div>
+                        <button onclick="addCommand('loop2')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 2">
+                            <i class="fa-solid fa-repeat text-xs"></i>2
+                        </button>
+                        <button onclick="addCommand('loop3')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 3">
+                            <i class="fa-solid fa-repeat text-xs"></i>3
+                        </button>
+                        <button onclick="addCommand('loop4')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 4">
+                            <i class="fa-solid fa-repeat text-xs"></i>4
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Controls d'execució i neteja del codi -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="btn-run-code" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-950/50 transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-flag text-lime-200"></i> Executa Programa
+                    </button>
+                    <button id="btn-reset-pos" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition text-sm" title="Tornar a la posició inicial">
+                        <i class="fa-solid fa-backward-step"></i>
+                    </button>
+                    <button id="btn-clear-code" class="py-2.5 px-3 bg-rose-950/70 hover:bg-rose-900 text-rose-300 font-semibold rounded-xl border border-rose-800/80 transition text-xs flex items-center gap-1.5" title="Esborrar tota la fila de codi">
+                        <i class="fa-solid fa-trash-can"></i> Esborrar
+                    </button>
                 </div>
             </div>
 
-            <!-- Controls manuals ràpids per moure el robot directament (com el Tap Pen Controller) -->
-            <div class="mt-4 flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-xl shadow-md border border-slate-800">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Control Directe:</span>
-                <button onclick="moveRobotManual('left')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition" title="Girar Esquerra">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
-                <button onclick="moveRobotManual('forward')" class="w-8 h-8 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 flex items-center justify-center transition" title="Avançar">
-                    <i class="fa-solid fa-arrow-up"></i>
-                </button>
-                <button onclick="moveRobotManual('right')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-950/70 text-slate-300 hover:text-amber-300 border border-slate-700 flex items-center justify-center transition" title="Girar Dreta">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
+            <!-- Fila horitzontal de targetes programades (es desplacen horitzontalment com una tira sobre la taula) -->
+            <div id="code-sequence" class="w-full min-h-[82px] px-4 py-3 overflow-x-auto overflow-y-hidden flex items-center gap-2 bg-slate-950/60">
+                <div id="empty-code-msg" class="w-full flex items-center justify-center gap-2 text-slate-500 py-2">
+                    <i class="fa-solid fa-hand-pointer text-base opacity-60"></i>
+                    <p class="text-xs sm:text-sm">Fes clic a les targetes de sobre per construir la tira de codi en horitzontal d'esquerra a dreta →</p>
+                </div>
             </div>
         </section>
-
-        <!-- PANELL DRET: Targetes de Programació mTiny -->
-        <aside class="w-full lg:w-80 bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col z-10 shrink-0 max-h-[34vh] lg:max-h-full">
-            <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
-                <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-emerald-400"></i> Targetes de Codi
-                </h2>
-                <button id="btn-clear-code" class="text-xs text-slate-400 hover:text-rose-400 font-medium">
-                    Esborrar tot
-                </button>
-            </div>
-
-            <!-- Botonera de targetes físiques de mTiny -->
-            <div class="p-3 border-b border-slate-800 bg-slate-900/60 space-y-2">
-                <p class="text-[11px] text-slate-400 font-medium">Targetes de moviment i control (lectura →):</p>
-                <div class="grid grid-cols-5 gap-1.5 items-center">
-                    <button onclick="addCommand('start')" class="h-12 flex items-center justify-center p-1.5 rounded-l-full rounded-r-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 shadow-sm transition active:scale-95" title="Inici de programa">
-                        <i class="fa-solid fa-flag text-emerald-600 text-base"></i>
-                    </button>
-                    <button onclick="addCommand('forward')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-700 shadow-sm transition active:scale-95" title="Avançar">
-                        <i class="fa-solid fa-arrow-right text-base"></i>
-                    </button>
-                    <button onclick="addCommand('left')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Esquerra">
-                        <i class="fa-solid fa-arrow-turn-up text-base"></i>
-                    </button>
-                    <button onclick="addCommand('right')" class="h-12 flex items-center justify-center p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 shadow-sm transition active:scale-95" title="Girar Dreta">
-                        <i class="fa-solid fa-arrow-turn-down text-base"></i>
-                    </button>
-                    <button onclick="addCommand('execute')" class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 shadow-sm transition active:scale-95" title="Executar codi">
-                        <i class="fa-solid fa-flag text-lime-200 text-base"></i>
-                    </button>
-                </div>
-
-                <!-- Parèntesis i Multiplicadors (x2, x3, x4) en Groc -->
-                <div class="grid grid-cols-5 gap-1.5">
-                    <button onclick="addCommand('open_paren')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Obre parèntesi">
-                        (
-                    </button>
-                    <button onclick="addCommand('close_paren')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-base shadow-sm transition active:scale-95" title="Tanca parèntesi">
-                        )
-                    </button>
-                    <button onclick="addCommand('x2')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x2">
-                        x2
-                    </button>
-                    <button onclick="addCommand('x3')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x3">
-                        x3
-                    </button>
-                    <button onclick="addCommand('x4')" class="h-10 flex items-center justify-center py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Repetir x4">
-                        x4
-                    </button>
-                </div>
-
-                <!-- Bucles (2, 3, 4) en Groc -->
-                <div class="grid grid-cols-3 gap-1.5">
-                    <button onclick="addCommand('loop2')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 2">
-                        <i class="fa-solid fa-repeat text-xs"></i> 2
-                    </button>
-                    <button onclick="addCommand('loop3')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 3">
-                        <i class="fa-solid fa-repeat text-xs"></i> 3
-                    </button>
-                    <button onclick="addCommand('loop4')" class="h-10 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 4">
-                        <i class="fa-solid fa-repeat text-xs"></i> 4
-                    </button>
-                </div>
-            </div>
-
-            <!-- Seqüència de targetes programades (disposició horitzontal d'esquerra a dreta com les targetes físiques) -->
-            <div id="code-sequence" class="flex-1 p-3 overflow-y-auto flex flex-wrap content-start gap-2 bg-slate-950/40">
-                <div id="empty-code-msg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
-                    <i class="fa-solid fa-hand-pointer text-2xl mb-2 opacity-50"></i>
-                    <p class="text-xs">Fes clic a les targetes per construir la fila de codi d'esquerra a dreta →</p>
-                </div>
-            </div>
-
-            <!-- Botó d'execució (Com la targeta verda de bandera / Tap Pen) -->
-            <div class="p-3 border-t border-slate-800 bg-slate-900 flex gap-2">
-                <button id="btn-run-code" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-flag text-lime-200"></i> Executa Programa
-                </button>
-                <button id="btn-reset-pos" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition" title="Tornar a la posició inicial">
-                    <i class="fa-solid fa-backward-step"></i>
-                </button>
-            </div>
-        </aside>
     </main>
 
     <script>
@@ -309,27 +357,27 @@
             // --- 1. PLAQUES D'ANIMALS (Costat esquerre corbat, sense encaix a l'esquerra, màx 1) ---
             {
                 id: 'animal_dog', category: 'Animals (Inici esquerra corbat)', name: 'Gosset',
-                bg: '#fef08a', border: '#eab308', textColor: '#854d0e', sound: 'dog',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'dog',
                 curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef08a"/><circle cx="54" cy="52" r="26" fill="#d97706"/><ellipse cx="30" cy="48" rx="7" ry="15" transform="rotate(15 30 48)" fill="#78350f"/><ellipse cx="78" cy="48" rx="7" ry="15" transform="rotate(-15 78 48)" fill="#78350f"/><circle cx="45" cy="46" r="4" fill="#1e293b"/><circle cx="63" cy="46" r="4" fill="#1e293b"/><ellipse cx="54" cy="58" rx="10" ry="7" fill="#fef3c7"/><ellipse cx="54" cy="55" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 62q5 5 10 0" stroke="#1e293b" stroke-width="2.5" fill="none"/></svg>`
+                svg: `<svg viewBox="0 0 100 100"><circle cx="54" cy="52" r="26" fill="#d97706"/><ellipse cx="30" cy="48" rx="7" ry="15" transform="rotate(15 30 48)" fill="#78350f"/><ellipse cx="78" cy="48" rx="7" ry="15" transform="rotate(-15 78 48)" fill="#78350f"/><circle cx="45" cy="46" r="4" fill="#1e293b"/><circle cx="63" cy="46" r="4" fill="#1e293b"/><ellipse cx="54" cy="58" rx="10" ry="7" fill="#fef3c7"/><ellipse cx="54" cy="55" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 62q5 5 10 0" stroke="#1e293b" stroke-width="2.5" fill="none"/></svg>`
             },
             {
                 id: 'animal_chicken', category: 'Animals (Inici esquerra corbat)', name: 'Pollet',
-                bg: '#dcfce7', border: '#22c55e', textColor: '#14532d', sound: 'bird',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird',
                 curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dcfce7"/><path d="M49 24c2-6 8-6 10 0" stroke="#ef4444" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="54" cy="54" r="24" fill="#facc15"/><circle cx="46" cy="48" r="3.5" fill="#1e293b"/><circle cx="62" cy="48" r="3.5" fill="#1e293b"/><polygon points="48,55 60,55 54,63" fill="#f97316"/></svg>`
+                svg: `<svg viewBox="0 0 100 100"><path d="M49 24c2-6 8-6 10 0" stroke="#ef4444" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="54" cy="54" r="24" fill="#facc15"/><circle cx="46" cy="48" r="3.5" fill="#1e293b"/><circle cx="62" cy="48" r="3.5" fill="#1e293b"/><polygon points="48,55 60,55 54,63" fill="#f97316"/></svg>`
             },
             {
                 id: 'animal_panda', category: 'Animals (Inici esquerra corbat)', name: 'Panda',
-                bg: '#e0f2fe', border: '#0284c7', textColor: '#0c4a6e', sound: 'panda',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda',
                 curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#e0f2fe"/><circle cx="36" cy="30" r="10" fill="#1e293b"/><circle cx="72" cy="30" r="10" fill="#1e293b"/><circle cx="54" cy="54" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/><ellipse cx="44" cy="50" rx="6" ry="8" transform="rotate(-15 44 50)" fill="#1e293b"/><ellipse cx="64" cy="50" rx="6" ry="8" transform="rotate(15 64 50)" fill="#1e293b"/><circle cx="45" cy="49" r="2.2" fill="#ffffff"/><circle cx="63" cy="49" r="2.2" fill="#ffffff"/><ellipse cx="54" cy="60" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 65q5 4 10 0" stroke="#1e293b" stroke-width="2" fill="none"/></svg>`
+                svg: `<svg viewBox="0 0 100 100"><circle cx="36" cy="30" r="10" fill="#1e293b"/><circle cx="72" cy="30" r="10" fill="#1e293b"/><circle cx="54" cy="54" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/><ellipse cx="44" cy="50" rx="6" ry="8" transform="rotate(-15 44 50)" fill="#1e293b"/><ellipse cx="64" cy="50" rx="6" ry="8" transform="rotate(15 64 50)" fill="#1e293b"/><circle cx="45" cy="49" r="2.2" fill="#ffffff"/><circle cx="63" cy="49" r="2.2" fill="#ffffff"/><ellipse cx="54" cy="60" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 65q5 4 10 0" stroke="#1e293b" stroke-width="2" fill="none"/></svg>`
             },
             {
                 id: 'animal_cat', category: 'Animals (Inici esquerra corbat)', name: 'Gat',
-                bg: '#fbcfe8', border: '#ec4899', textColor: '#831843', sound: 'cat',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'cat',
                 curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fbcfe8"/><polygon points="30,42 36,18 50,34" fill="#f97316"/><polygon points="78,42 72,18 58,34" fill="#f97316"/><circle cx="54" cy="54" r="24" fill="#fb923c"/><circle cx="45" cy="49" r="3.5" fill="#1e293b"/><circle cx="63" cy="49" r="3.5" fill="#1e293b"/><polygon points="50,56 58,56 54,60" fill="#f43f5e"/><line x1="26" y1="54" x2="38" y2="56" stroke="#7c2d12" stroke-width="2"/><line x1="82" y1="54" x2="70" y2="56" stroke="#7c2d12" stroke-width="2"/></svg>`
+                svg: `<svg viewBox="0 0 100 100"><polygon points="30,42 36,18 50,34" fill="#f97316"/><polygon points="78,42 72,18 58,34" fill="#f97316"/><circle cx="54" cy="54" r="24" fill="#fb923c"/><circle cx="45" cy="49" r="3.5" fill="#1e293b"/><circle cx="63" cy="49" r="3.5" fill="#1e293b"/><polygon points="50,56 58,56 54,60" fill="#f43f5e"/><line x1="26" y1="54" x2="38" y2="56" stroke="#7c2d12" stroke-width="2"/><line x1="82" y1="54" x2="70" y2="56" stroke="#7c2d12" stroke-width="2"/></svg>`
             },
 
             // --- 2. GESPA VERDA (7 peces disponibles) ---
@@ -343,68 +391,68 @@
             // --- 3. PLAQUES TEMÀTIQUES ÚNIQUES (1 de cada) ---
             {
                 id: 'food_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn amb os',
-                bg: '#fee2e2', border: '#ef4444', textColor: '#7f1d1d', sound: 'happy', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fee2e2"/><rect x="18" y="44" width="64" height="12" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="18" cy="43" r="6" fill="#fef3c7"/><circle cx="18" cy="57" r="6" fill="#fef3c7"/><circle cx="82" cy="43" r="6" fill="#fef3c7"/><circle cx="82" cy="57" r="6" fill="#fef3c7"/><rect x="28" y="30" width="44" height="40" rx="16" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/><ellipse cx="45" cy="42" rx="10" ry="4" fill="#fca5a5" opacity="0.6"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="18" y="44" width="64" height="12" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="18" cy="43" r="6" fill="#fef3c7"/><circle cx="18" cy="57" r="6" fill="#fef3c7"/><circle cx="82" cy="43" r="6" fill="#fef3c7"/><circle cx="82" cy="57" r="6" fill="#fef3c7"/><rect x="28" y="30" width="44" height="40" rx="16" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/><ellipse cx="45" cy="42" rx="10" ry="4" fill="#fca5a5" opacity="0.6"/></svg>`
             },
             {
                 id: 'bamboo_forest', category: 'Plaques Úniques (1 de cada)', name: 'Bosc de bambú',
-                bg: '#80ed99', border: '#38b000', textColor: '#143601', sound: 'panda', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#80ed99"/><rect x="24" y="15" width="7" height="70" rx="2" fill="#2b9348"/><rect x="46" y="10" width="8" height="75" rx="2" fill="#007f5f"/><rect x="68" y="18" width="7" height="67" rx="2" fill="#2b9348"/><line x1="22" y1="35" x2="33" y2="35" stroke="#aacc00" stroke-width="3"/><line x1="22" y1="60" x2="33" y2="60" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="30" x2="56" y2="30" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="55" x2="56" y2="55" stroke="#aacc00" stroke-width="3"/><ellipse cx="60" cy="25" rx="8" ry="3.5" transform="rotate(-25 60 25)" fill="#55a630"/><ellipse cx="36" cy="45" rx="8" ry="3.5" transform="rotate(20 36 45)" fill="#55a630"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="24" y="15" width="7" height="70" rx="2" fill="#2b9348"/><rect x="46" y="10" width="8" height="75" rx="2" fill="#007f5f"/><rect x="68" y="18" width="7" height="67" rx="2" fill="#2b9348"/><line x1="22" y1="35" x2="33" y2="35" stroke="#aacc00" stroke-width="3"/><line x1="22" y1="60" x2="33" y2="60" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="30" x2="56" y2="30" stroke="#aacc00" stroke-width="3"/><line x1="44" y1="55" x2="56" y2="55" stroke="#aacc00" stroke-width="3"/><ellipse cx="60" cy="25" rx="8" ry="3.5" transform="rotate(-25 60 25)" fill="#55a630"/><ellipse cx="36" cy="45" rx="8" ry="3.5" transform="rotate(20 36 45)" fill="#55a630"/></svg>`
             },
             {
                 id: 'food_fish', category: 'Plaques Úniques (1 de cada)', name: 'Peix',
-                bg: '#cffafe', border: '#06b6d4', textColor: '#164e63', sound: 'cat', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#cffafe"/><polygon points="72,50 88,34 88,66" fill="#0284c7"/><ellipse cx="46" cy="50" rx="30" ry="18" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/><circle cx="30" cy="46" r="3.5" fill="#0f172a"/><path d="M44 38q-6 12 0 24M55 40q-5 10 0 20" stroke="#e0f2fe" stroke-width="2.5" fill="none"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'cat', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><polygon points="72,50 88,34 88,66" fill="#0284c7"/><ellipse cx="46" cy="50" rx="30" ry="18" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/><circle cx="30" cy="46" r="3.5" fill="#0f172a"/><path d="M44 38q-6 12 0 24M55 40q-5 10 0 20" stroke="#e0f2fe" stroke-width="2.5" fill="none"/></svg>`
             },
             {
                 id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: 'Pinya de blat de moro',
-                bg: '#fef9c3', border: '#ca8a04', textColor: '#713f12', sound: 'bird', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef9c3"/><ellipse cx="50" cy="46" rx="15" ry="28" fill="#facc15" stroke="#ca8a04" stroke-width="2"/><path d="M38 35h24M36 46h28M38 57h24M45 22v48M55 22v48" stroke="#eab308" stroke-width="2"/><path d="M35 45Q22 65 50 80Q40 60 35 45Z" fill="#22c55e"/><path d="M65 45Q78 65 50 80Q60 60 65 45Z" fill="#16a34a"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><ellipse cx="50" cy="46" rx="15" ry="28" fill="#facc15" stroke="#ca8a04" stroke-width="2"/><path d="M38 35h24M36 46h28M38 57h24M45 22v48M55 22v48" stroke="#eab308" stroke-width="2"/><path d="M35 45Q22 65 50 80Q40 60 35 45Z" fill="#22c55e"/><path d="M65 45Q78 65 50 80Q60 60 65 45Z" fill="#16a34a"/></svg>`
             },
             {
                 id: 'merry_go_round', category: 'Plaques Úniques (1 de cada)', name: 'Carrussel',
-                bg: '#f3e8ff', border: '#9333ea', textColor: '#581c87', sound: 'music', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3e8ff"/><rect x="20" y="76" width="60" height="8" rx="3" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/><rect x="46" y="38" width="8" height="38" fill="#facc15"/><line x1="30" y1="38" x2="30" y2="76" stroke="#94a3b8" stroke-width="2.5"/><line x1="70" y1="38" x2="70" y2="76" stroke="#94a3b8" stroke-width="2.5"/><ellipse cx="30" cy="58" rx="8" ry="5" fill="#ffffff" stroke="#a855f7" stroke-width="2"/><circle cx="24" cy="53" r="3.5" fill="#ffffff" stroke="#a855f7" stroke-width="1.5"/><ellipse cx="70" cy="54" rx="8" ry="5" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/><circle cx="76" cy="49" r="3.5" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/><polygon points="50,14 16,38 84,38" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><polygon points="50,14 34,38 66,38" fill="#facc15"/><circle cx="50" cy="12" r="4" fill="#facc15"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="76" width="60" height="8" rx="3" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/><rect x="46" y="38" width="8" height="38" fill="#facc15"/><line x1="30" y1="38" x2="30" y2="76" stroke="#94a3b8" stroke-width="2.5"/><line x1="70" y1="38" x2="70" y2="76" stroke="#94a3b8" stroke-width="2.5"/><ellipse cx="30" cy="58" rx="8" ry="5" fill="#ffffff" stroke="#a855f7" stroke-width="2"/><circle cx="24" cy="53" r="3.5" fill="#ffffff" stroke="#a855f7" stroke-width="1.5"/><ellipse cx="70" cy="54" rx="8" ry="5" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/><circle cx="76" cy="49" r="3.5" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/><polygon points="50,14 16,38 84,38" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><polygon points="50,14 34,38 66,38" fill="#facc15"/><circle cx="50" cy="12" r="4" fill="#facc15"/></svg>`
             },
             {
                 id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota de futbol',
-                bg: '#dcfce7', border: '#16a34a', textColor: '#14532d', sound: 'happy', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dcfce7"/><circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#1e293b" stroke-width="3"/><polygon points="50,38 61,46 57,59 43,59 39,46" fill="#1e293b"/><line x1="50" y1="38" x2="50" y2="22" stroke="#1e293b" stroke-width="2.5"/><line x1="61" y1="46" x2="76" y2="41" stroke="#1e293b" stroke-width="2.5"/><line x1="57" y1="59" x2="66" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="43" y1="59" x2="34" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="39" y1="46" x2="24" y2="41" stroke="#1e293b" stroke-width="2.5"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#1e293b" stroke-width="3"/><polygon points="50,38 61,46 57,59 43,59 39,46" fill="#1e293b"/><line x1="50" y1="38" x2="50" y2="22" stroke="#1e293b" stroke-width="2.5"/><line x1="61" y1="46" x2="76" y2="41" stroke="#1e293b" stroke-width="2.5"/><line x1="57" y1="59" x2="66" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="43" y1="59" x2="34" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="39" y1="46" x2="24" y2="41" stroke="#1e293b" stroke-width="2.5"/></svg>`
             },
             {
                 id: 'jack_in_box', category: 'Plaques Úniques (1 de cada)', name: 'Pallasso caixa regal',
-                bg: '#ffedd5', border: '#ea580c', textColor: '#7c2d12', sound: 'music', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#ffedd5"/><rect x="30" y="56" width="40" height="28" rx="3" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><line x1="50" y1="56" x2="50" y2="84" stroke="#facc15" stroke-width="5"/><path d="M46 56L54 50L46 44L54 38" stroke="#64748b" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><circle cx="50" cy="29" r="3" fill="#ef4444"/><polygon points="40,19 60,19 50,8" fill="#3b82f6"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="30" y="56" width="40" height="28" rx="3" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><line x1="50" y1="56" x2="50" y2="84" stroke="#facc15" stroke-width="5"/><path d="M46 56L54 50L46 44L54 38" stroke="#64748b" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><circle cx="50" cy="29" r="3" fill="#ef4444"/><polygon points="40,19 60,19 50,8" fill="#3b82f6"/></svg>`
             },
             {
                 id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Banyera amb dutxa',
-                bg: '#e0f2fe', border: '#0ea5e9', textColor: '#0369a1', sound: 'step', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#e0f2fe"/><path d="M74 52V24Q74 16 64 16H58" stroke="#64748b" stroke-width="3.5" fill="none"/><polygon points="52,16 62,16 60,23 54,23" fill="#94a3b8"/><line x1="55" y1="27" x2="53" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><line x1="59" y1="27" x2="61" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><path d="M20 52H80V64Q80 78 62 78H38Q20 78 20 64Z" fill="#ffffff" stroke="#0284c7" stroke-width="2.5"/><rect x="16" y="48" width="68" height="6" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M74 52V24Q74 16 64 16H58" stroke="#64748b" stroke-width="3.5" fill="none"/><polygon points="52,16 62,16 60,23 54,23" fill="#94a3b8"/><line x1="55" y1="27" x2="53" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><line x1="59" y1="27" x2="61" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><path d="M20 52H80V64Q80 78 62 78H38Q20 78 20 64Z" fill="#ffffff" stroke="#0284c7" stroke-width="2.5"/><rect x="16" y="48" width="68" height="6" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></svg>`
             },
             {
                 id: 'house_tile', category: 'Plaques Úniques (1 de cada)', name: 'Casa',
-                bg: '#fef3c7', border: '#d97706', textColor: '#78350f', sound: 'home', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fef3c7"/><polygon points="50,18 18,46 82,46" fill="#ef4444" stroke="#991b1b" stroke-width="2.5"/><rect x="26" y="46" width="48" height="36" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><rect x="43" y="58" width="14" height="24" fill="#92400e"/><rect x="31" y="54" width="9" height="9" fill="#38bdf8"/><rect x="60" y="54" width="9" height="9" fill="#38bdf8"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'home', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><polygon points="50,18 18,46 82,46" fill="#ef4444" stroke="#991b1b" stroke-width="2.5"/><rect x="26" y="46" width="48" height="36" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><rect x="43" y="58" width="14" height="24" fill="#92400e"/><rect x="31" y="54" width="9" height="9" fill="#38bdf8"/><rect x="60" y="54" width="9" height="9" fill="#38bdf8"/></svg>`
             },
             {
                 id: 'bed_tile', category: 'Plaques Úniques (1 de cada)', name: 'Llit',
-                bg: '#ede9fe', border: '#7c3aed', textColor: '#4c1d95', sound: 'music', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#ede9fe"/><rect x="20" y="34" width="8" height="44" rx="2" fill="#92400e"/><rect x="72" y="46" width="8" height="32" rx="2" fill="#92400e"/><rect x="28" y="54" width="44" height="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><rect x="42" y="52" width="30" height="16" rx="3" fill="#8b5cf6"/><rect x="29" y="47" width="14" height="8" rx="3" fill="#fef08a"/><rect x="20" y="66" width="60" height="6" fill="#b45309"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'music', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="34" width="8" height="44" rx="2" fill="#92400e"/><rect x="72" y="46" width="8" height="32" rx="2" fill="#92400e"/><rect x="28" y="54" width="44" height="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><rect x="42" y="52" width="30" height="16" rx="3" fill="#8b5cf6"/><rect x="29" y="47" width="14" height="8" rx="3" fill="#fef08a"/><rect x="20" y="66" width="60" height="6" fill="#b45309"/></svg>`
             },
             {
                 id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: "Pastís d'aniversari",
-                bg: '#fce7f3', border: '#db2777', textColor: '#831843', sound: 'happy', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fce7f3"/><rect x="24" y="54" width="52" height="24" rx="4" fill="#f472b6" stroke="#be185d" stroke-width="2"/><rect x="32" y="38" width="36" height="16" rx="3" fill="#fbcfe8" stroke="#be185d" stroke-width="2"/><rect x="48" y="24" width="4" height="14" fill="#38bdf8"/><path d="M50 14Q54 20 50 24Q46 20 50 14Z" fill="#facc15"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="24" y="54" width="52" height="24" rx="4" fill="#f472b6" stroke="#be185d" stroke-width="2"/><rect x="32" y="38" width="36" height="16" rx="3" fill="#fbcfe8" stroke="#be185d" stroke-width="2"/><rect x="48" y="24" width="4" height="14" fill="#38bdf8"/><path d="M50 14Q54 20 50 24Q46 20 50 14Z" fill="#facc15"/></svg>`
             },
             {
                 id: 'ghost_tile', category: 'Plaques Úniques (1 de cada)', name: 'Fantasma',
-                bg: '#e2e8f0', border: '#475569', textColor: '#1e293b', sound: 'error', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#334155"/><path d="M28 50A22 22 0 0 1 72 50V78L63 70L54 78L45 70L36 78L28 70Z" fill="#ffffff"/><circle cx="42" cy="46" r="4" fill="#0f172a"/><circle cx="58" cy="46" r="4" fill="#0f172a"/><ellipse cx="50" cy="57" rx="4" ry="5" fill="#0f172a"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'error', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M28 50A22 22 0 0 1 72 50V78L63 70L54 78L45 70L36 78L28 70Z" fill="#ffffff" stroke="#475569" stroke-width="2"/><circle cx="42" cy="46" r="4" fill="#0f172a"/><circle cx="58" cy="46" r="4" fill="#0f172a"/><ellipse cx="50" cy="57" rx="4" ry="5" fill="#0f172a"/></svg>`
             },
             {
                 id: 'book_tile', category: 'Plaques Úniques (1 de cada)', name: 'Llibre',
-                bg: '#dbeafe', border: '#2563eb', textColor: '#1e3a8a', sound: 'step', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#dbeafe"/><path d="M20 30Q35 26 50 32Q65 26 80 30V72Q65 68 50 74Q35 68 20 72Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="3"/><line x1="50" y1="32" x2="50" y2="74" stroke="#1d4ed8" stroke-width="2.5"/><line x1="27" y1="42" x2="43" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="27" y1="52" x2="43" y2="52" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="42" x2="73" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="52" x2="73" y2="52" stroke="#93c5fd" stroke-width="2.5"/></svg>`
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M20 30Q35 26 50 32Q65 26 80 30V72Q65 68 50 74Q35 68 20 72Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="3"/><line x1="50" y1="32" x2="50" y2="74" stroke="#1d4ed8" stroke-width="2.5"/><line x1="27" y1="42" x2="43" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="27" y1="52" x2="43" y2="52" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="42" x2="73" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="52" x2="73" y2="52" stroke="#93c5fd" stroke-width="2.5"/></svg>`
             }
         ];
 
@@ -418,12 +466,14 @@
                 placed: false, // No apareix fins que l'usuari el col·loqui
                 row: 0,
                 col: 0,
-                dir: 1 // 0: Nord (Amunt), 1: Est (Dreta), 2: Sud (Avall), 3: Oest (Esquerra)
+                dir: 1, // 0: Nord (Amunt), 1: Est (Dreta), 2: Sud (Avall), 3: Oest (Esquerra)
+                angle: 90 // Angle visual acumulat en graus per girar sempre pel camí curt (±90°)
             },
-            initialRobot: { placed: false, row: 0, col: 0, dir: 1 },
+            initialRobot: { placed: false, row: 0, col: 0, dir: 1, angle: 90 },
             commands: [],
             isRunning: false
         };
+
         // Compta quantes unitats d'una placa hi ha actualment col·locades al tauler
         function getTilePlacedCount(tileId) {
             let count = 0;
@@ -447,10 +497,10 @@
 
             categories.forEach(cat => {
                 const section = document.createElement('div');
-                section.innerHTML = `<h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">${cat}</h3>`;
+                section.innerHTML = `<h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">${cat}</h3>`;
                 
                 const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-2 gap-2';
+                grid.className = 'grid grid-cols-2 sm:grid-cols-3 gap-1.5';
 
                 TILE_CATALOG.filter(t => t.category === cat).forEach(tile => {
                     const placedCount = getTilePlacedCount(tile.id);
@@ -460,20 +510,20 @@
                     const btn = document.createElement('button');
                     btn.id = `palette-tile-${tile.id}`;
                     btn.draggable = !isDepleted;
-                    btn.className = `palette-item flex items-center gap-2 p-2 rounded-xl border-2 text-left transition shadow-sm ${
+                    btn.className = `palette-item flex items-center gap-1.5 p-1.5 rounded-xl border-2 text-left transition shadow-sm ${
                         isDepleted 
                         ? 'border-slate-800 bg-slate-950/70 opacity-50 cursor-not-allowed' 
                         : 'border-slate-700/80 bg-slate-800/80 hover:border-blue-400'
                     }`;
                     
                     btn.innerHTML = `
-                        <div class="w-9 h-9 rounded-lg overflow-hidden shrink-0 shadow-sm tile-svg-container ${tile.curvedLeft ? 'curved-left-tile' : ''}" style="border: 2px solid ${tile.border};">
+                        <div class="w-8 h-8 rounded-lg overflow-hidden shrink-0 shadow-sm tile-svg-container ${tile.curvedLeft ? 'curved-left-tile' : ''}" style="background-color: ${tile.bg}; border: 2px solid ${tile.border};">
                             ${tile.svg}
                         </div>
-                        <div class="overflow-hidden flex-1">
-                            <div class="text-xs font-bold text-slate-100 truncate">${tile.name}</div>
-                            <div class="text-[10px] font-semibold ${isDepleted ? 'text-rose-400' : 'text-slate-400'}">
-                                Disp: ${maxCount - placedCount}/${maxCount}
+                        <div class="overflow-hidden flex-1 min-w-0">
+                            <div class="text-[11px] font-bold text-slate-100 truncate leading-tight">${tile.name}</div>
+                            <div class="text-[10px] font-semibold leading-tight ${isDepleted ? 'text-rose-400' : 'text-slate-400'}">
+                                ${maxCount - placedCount}/${maxCount}
                             </div>
                         </div>
                     `;
@@ -641,11 +691,11 @@
             robotEl.classList.remove('hidden');
 
             const tileSize = customTileSize || computeOptimalTileSize();
-            const gap = 6; // gap-1.5 = 0.375rem = 6px
-            const gridPadding = 8; // p-2 = 0.5rem = 8px
+            const gap = 0; // Les peces de puzle encaixen sense separació
+            const gridPadding = 12; // p-3 = 0.75rem = 12px
             const borderWidth = 2; // border-2 = 2px
 
-            const robotSize = Math.round(tileSize * 0.76);
+            const robotSize = Math.round(tileSize * 0.74);
             robotEl.style.width = `${robotSize}px`;
             robotEl.style.height = `${robotSize}px`;
 
@@ -657,7 +707,7 @@
 
             const left = cellX + (tileSize - robotSize) / 2;
             const top = cellY + (tileSize - robotSize) / 2;
-            const rotationDeg = state.robot.dir * 90;
+            const rotationDeg = state.robot.angle !== undefined ? state.robot.angle : state.robot.dir * 90;
 
             robotEl.style.left = `${left}px`;
             robotEl.style.top = `${top}px`;
@@ -673,17 +723,73 @@
                 return isMobile ? Math.min(62, Math.floor((window.innerWidth - 64) / state.cols)) : 104;
             }
 
-            const availWidth = boardSection.clientWidth - (isMobile ? 64 : 110);
-            const availHeight = boardSection.clientHeight - (isMobile ? 130 : 170);
-            const gap = 6;
+            const availWidth = boardSection.clientWidth - (isMobile ? 48 : 96);
+            const availHeight = boardSection.clientHeight - (isMobile ? 88 : 112);
+            const gap = 0;
 
             const maxByWidth = Math.floor((availWidth - gap * (state.cols - 1)) / state.cols);
             const maxByHeight = Math.floor((availHeight - gap * (state.rows - 1)) / state.rows);
 
-            const minSize = isMobile ? 48 : 78;
+            const minSize = isMobile ? 46 : 74;
             const maxSize = isMobile ? 76 : 124;
 
             return Math.max(minSize, Math.min(maxSize, maxByWidth, maxByHeight));
+        }
+
+        // Genera el contorn SVG de peça de puzle (viewBox -15 -15 130 130, nucli 0..100)
+        // Per cada costat: 'tab' (pestanya sortint), 'blank' (forat entrant), 'curved' (esquerra arrodonida), 'flat' (vora recta)
+        function createPuzzleShapeSVG(tile, r, c) {
+            const isCurvedLeft = !!tile.curvedLeft;
+            const topType = (r === 0) ? 'flat' : ((r + c) % 2 === 1 ? 'tab' : 'blank');
+            const bottomType = (r === state.rows - 1) ? 'flat' : ((r + 1 + c) % 2 === 1 ? 'blank' : 'tab');
+            const rightType = (c === state.cols - 1) ? 'flat' : ((r + c + 1) % 2 === 1 ? 'blank' : 'tab');
+            const leftType = isCurvedLeft ? 'curved' : (c === 0 ? 'flat' : ((r + c) % 2 === 1 ? 'tab' : 'blank'));
+
+            // Començar al vèrtex superior esquerre (o inici de la corba esquerra)
+            let d = isCurvedLeft ? 'M 38 0 ' : 'M 0 0 ';
+
+            // Costat SUPERIOR (0 -> 100, y = 0)
+            if (topType === 'tab') {
+                d += 'L 37 0 C 37 -4 34 -12 50 -12 C 66 -12 63 -4 63 0 L 100 0 ';
+            } else if (topType === 'blank') {
+                d += 'L 37 0 C 37 4 34 12 50 12 C 66 12 63 4 63 0 L 100 0 ';
+            } else {
+                d += 'L 100 0 ';
+            }
+
+            // Costat DRET (x = 100, y: 0 -> 100)
+            if (rightType === 'tab') {
+                d += 'L 100 37 C 104 37 112 34 112 50 C 112 66 104 63 100 63 L 100 100 ';
+            } else if (rightType === 'blank') {
+                d += 'L 100 37 C 96 37 88 34 88 50 C 88 66 96 63 100 63 L 100 100 ';
+            } else {
+                d += 'L 100 100 ';
+            }
+
+            // Costat INFERIOR (x: 100 -> 0, y = 100)
+            if (bottomType === 'tab') {
+                d += 'L 63 100 C 63 104 66 112 50 112 C 34 112 37 104 37 100 ';
+            } else if (bottomType === 'blank') {
+                d += 'L 63 100 C 63 96 66 88 50 88 C 34 88 37 96 37 100 ';
+            }
+            d += isCurvedLeft ? 'L 38 100 ' : 'L 0 100 ';
+
+            // Costat ESQUERRE (x = 0, y: 100 -> 0)
+            if (leftType === 'curved') {
+                d += 'C 4 100 4 0 38 0 Z';
+            } else if (leftType === 'tab') {
+                d += 'L 0 63 C -4 63 -12 66 -12 50 C -12 34 -4 37 0 37 Z';
+            } else if (leftType === 'blank') {
+                d += 'L 0 63 C 4 63 12 66 12 50 C 12 34 4 37 0 37 Z';
+            } else {
+                d += 'Z';
+            }
+
+            return `
+                <svg viewBox="-15 -15 130 130" class="puzzle-piece-svg">
+                    <path d="${d}" fill="${tile.bg}" stroke="${tile.border}" stroke-width="2.4" stroke-linejoin="round"/>
+                </svg>
+            `;
         }
 
         // Canvia l'eina activa (col·locar placa, girar, esborrar o posicionar robot)
@@ -793,18 +899,19 @@
                     if (cellData) {
                         const tile = TILE_CATALOG.find(t => t.id === cellData.id);
                         const rot = cellData.rotation || 0;
-                        cell.className = `mtiny-tile rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden ${tile.curvedLeft ? 'curved-left-tile' : ''}`;
-                        cell.style.backgroundColor = tile.bg;
-                        cell.style.border = `2.5px solid ${tile.border}`;
+                        // Les peces amb pestanyes sortints es dibuixen amb un z-index lleugerament superior per encaixar netament
+                        const hasTabs = (r > 0 && (r + c) % 2 === 1) || (c > 0 && !tile.curvedLeft && (r + c) % 2 === 1);
+                        cell.className = 'mtiny-tile flex flex-col items-center justify-center cursor-pointer relative overflow-visible';
+                        cell.style.zIndex = hasTabs ? '5' : '2';
                         cell.innerHTML = `
-                            <div class="w-full h-full tile-svg-container transition-transform duration-200" style="transform: rotate(${rot}deg);">
+                            ${createPuzzleShapeSVG(tile, r, c)}
+                            <div class="tile-inner-art transition-transform duration-200 ${tile.curvedLeft ? 'pl-2' : ''}" style="transform: rotate(${rot}deg);">
                                 ${tile.svg}
                             </div>
-                            <span class="absolute bottom-1 left-1.5 right-1.5 bg-white/90 backdrop-blur-[1px] rounded px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-center leading-tight truncate shadow-sm" style="color: ${tile.textColor};">${tile.name}</span>
                         `;
                     } else {
                         // Casella buida del llençol en blanc (en mode fosc)
-                        cell.className = 'rounded-xl border border-slate-800 bg-slate-900/90 hover:bg-slate-800/90 transition cursor-pointer flex items-center justify-center group';
+                        cell.className = 'border border-dashed border-slate-800/80 bg-slate-900/60 hover:bg-slate-800/80 transition cursor-pointer flex items-center justify-center group relative z-0';
                         cell.innerHTML = `<span class="text-xs text-slate-600 opacity-0 group-hover:opacity-100 font-medium">+</span>`;
                     }
 
@@ -880,11 +987,13 @@
             if (state.selectedTool === 'place_robot') {
                 if (state.robot.placed && state.robot.row === r && state.robot.col === c) {
                     state.robot.dir = (state.robot.dir + 1) % 4;
+                    state.robot.angle = (state.robot.angle !== undefined ? state.robot.angle : state.robot.dir * 90) + 90;
                     playSoundEffect('turn');
                 } else {
                     state.robot.placed = true;
                     state.robot.row = r;
                     state.robot.col = c;
+                    if (state.robot.angle === undefined) state.robot.angle = state.robot.dir * 90;
                     playSoundEffect('step');
                 }
                 state.initialRobot = { ...state.robot };
@@ -934,7 +1043,7 @@
             state.board[2][2] = { id: 'birthday_cake', rotation: 0 };
             state.board[0][2] = { id: 'house_tile', rotation: 0 };
 
-            state.robot = { placed: true, row: 1, col: 0, dir: 1 };
+            state.robot = { placed: true, row: 1, col: 0, dir: 1, angle: 90 };
             state.initialRobot = { ...state.robot };
 
             renderPalette();
@@ -950,7 +1059,7 @@
             },
             forward: {
                 html: '<i class="fa-solid fa-arrow-right text-base"></i>',
-                classes: 'w-11 h-11 rounded-xl bg-blue-600 text-white border border-blue-700'
+                classes: 'w-11 h-11 rounded-xl bg-blue-500 text-white border border-blue-600'
             },
             left: {
                 html: '<i class="fa-solid fa-arrow-turn-up text-base"></i>',
@@ -1020,9 +1129,9 @@
 
             if (state.commands.length === 0) {
                 container.innerHTML = `
-                    <div id="empty-code-msg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
-                        <i class="fa-solid fa-hand-pointer text-2xl mb-2 opacity-50"></i>
-                        <p class="text-xs">Fes clic a les targetes per construir la fila de codi d'esquerra a dreta →</p>
+                    <div id="empty-code-msg" class="w-full flex items-center justify-center gap-2 text-slate-500 py-2">
+                        <i class="fa-solid fa-hand-pointer text-base opacity-60"></i>
+                        <p class="text-xs sm:text-sm">Fes clic a les targetes de sobre per construir la tira de codi en horitzontal d'esquerra a dreta →</p>
                     </div>
                 `;
                 return;
@@ -1035,11 +1144,11 @@
                 if (!meta) return;
 
                 const wrapper = document.createElement('div');
-                wrapper.className = 'flex items-center gap-1';
+                wrapper.className = 'flex items-center gap-1.5 shrink-0';
 
                 const card = document.createElement('button');
                 const isActive = idx === activeIndex;
-                card.className = `${meta.classes} flex items-center justify-center shadow-sm transition relative group ${
+                card.className = `${meta.classes} flex items-center justify-center shadow-md transition relative group shrink-0 ${
                     isActive ? 'ring-4 ring-white scale-110 z-10' : 'hover:brightness-105'
                 }`;
                 card.innerHTML = `
@@ -1053,13 +1162,20 @@
 
                 if (idx < state.commands.length - 1) {
                     const arrow = document.createElement('span');
-                    arrow.className = 'text-slate-600 text-[10px] font-bold';
+                    arrow.className = 'text-slate-500 text-xs font-bold';
                     arrow.textContent = '→';
                     wrapper.appendChild(arrow);
                 }
 
                 container.appendChild(wrapper);
             });
+
+            // Desplaça automàticament cap a la dreta quan s'afegeixen targetes noves o cap a la targeta activa
+            if (activeIndex >= 0 && container.children[activeIndex]) {
+                container.children[activeIndex].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            } else {
+                container.scrollLeft = container.scrollWidth;
+            }
         }
 
         // Expandeix parèntesis, multiplicadors (x2, x3, x4) i bucles (loop2, loop3, loop4) en passos executables
@@ -1126,6 +1242,7 @@
 
             if (action === 'left') {
                 state.robot.dir = (state.robot.dir + 3) % 4;
+                state.robot.angle = (state.robot.angle !== undefined ? state.robot.angle : (state.robot.dir + 1) * 90) - 90;
                 playSoundEffect('turn');
                 updateRobotVisualPosition();
                 return true;
@@ -1133,6 +1250,7 @@
 
             if (action === 'right') {
                 state.robot.dir = (state.robot.dir + 1) % 4;
+                state.robot.angle = (state.robot.angle !== undefined ? state.robot.angle : (state.robot.dir + 3) * 90) + 90;
                 playSoundEffect('turn');
                 updateRobotVisualPosition();
                 return true;
