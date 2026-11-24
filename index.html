@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Tauler</title>
+    <title>Simulador de Tauler Robòtic</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome per a icones -->
@@ -21,7 +21,7 @@
             font-family: 'Rubik', sans-serif;
         }
         
-        /* Efecte de peces de puzle / plaques de cartró */
+        /* Efecte de peces de puzle / plaques de cartró mTiny */
         .mtiny-tile {
             transition: transform 0.15s ease;
         }
@@ -104,7 +104,7 @@
     <!-- Capçalera Superior -->
     <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between shadow-md z-20 gap-2">
         <div class="flex items-center gap-3">
-            <!-- Logotip personalitzat del robot panda mTiny -->
+            <!-- Logotip personalitzat del robot panda -->
             <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/40 border border-blue-400/30 p-1.5 shrink-0">
                 <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
                     <!-- Orelles negres de panda -->
@@ -114,7 +114,7 @@
                     <rect x="14" y="20" width="72" height="64" rx="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
                     <!-- Visor frontal fosc -->
                     <rect x="22" y="34" width="56" height="32" rx="14" fill="#0f172a"/>
-                    <!-- Ulls digitals blaus expressius de mTiny -->
+                    <!-- Ulls digitals blaus expressius del robot -->
                     <circle cx="38" cy="50" r="8" fill="#38bdf8"/>
                     <circle cx="35" cy="47" r="2.5" fill="#ffffff"/>
                     <circle cx="62" cy="50" r="8" fill="#38bdf8"/>
@@ -124,15 +124,15 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de <span class="text-blue-400">Taulers</span></h1>
-                <p class="text-xs text-slate-400">Dissenya el tauler i programa el recorregut del robot</p>
+                <h1 class="text-xl font-bold text-slate-100 leading-tight">Estudi de Taulers <span class="text-blue-400">Robòtics</span></h1>
+                <p class="text-xs text-slate-400">Dissenya la catifa i programa el recorregut del robot</p>
             </div>
         </div>
 
         <!-- Controls de la graella i eines ràpides -->
         <div class="flex items-center gap-2 flex-wrap">
             <div class="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
-                <span class="text-xs font-semibold text-slate-300 px-2">Mida Llençol:</span>
+                <span class="text-xs font-semibold text-slate-300 px-2">Mida Tauler:</span>
                 <select id="grid-size-select" class="bg-slate-900 text-xs font-bold text-slate-100 py-1 px-2 rounded shadow-sm border border-slate-700 focus:outline-none">
                     <option value="4x4">4 x 4 (Compacte)</option>
                     <option value="5x5">5 x 5 (Estàndard)</option>
@@ -160,10 +160,10 @@
     <!-- Cos Principal: Dalt (Catàleg + Llençol) i Baix (Barra de Programació Horitzontal) -->
     <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- ZONA SUPERIOR: Catàleg a l'esquerra + Tauler al centre -->
+        <!-- ZONA SUPERIOR: Catàleg a l'esquerra + Llençol al centre -->
         <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
             
-            <!-- PANELL ESQUERRE: Catàleg de Plaques  -->
+            <!-- PANELL ESQUERRE: Catàleg de Plaques mTiny -->
             <aside class="w-full lg:w-[390px] xl:w-[430px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col z-10 shrink-0 max-h-[28vh] lg:max-h-full">
                 <div class="px-3 py-2 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
                     <h2 class="font-bold text-slate-200 text-sm flex items-center gap-2">
@@ -171,10 +171,10 @@
                     </h2>
                 </div>
 
-                <!-- Eines especials (r robot / Treure placa) -->
+                <!-- Eines especials (Col·locar robot / Treure placa) -->
                 <div class="p-2 border-b border-slate-800 grid grid-cols-2 gap-1.5 bg-slate-900/80">
                     <button id="tool-place-robot" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-blue-500 bg-blue-950/70 text-blue-300 font-semibold text-[11px] shadow-sm transition">
-                        <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i>  robot
+                        <i class="fa-solid fa-location-crosshairs mb-0.5 text-xs"></i> Col·loca robot
                     </button>
                     <button id="tool-eraser" class="tool-btn flex flex-col items-center justify-center p-1.5 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] transition">
                         <i class="fa-solid fa-eraser mb-0.5 text-xs"></i> Treure
@@ -187,7 +187,7 @@
                 </div>
             </aside>
 
-            <!-- ZONA CENTRAL: Llençol en blanc (Graella interactiva) -->
+            <!-- ZONA CENTRAL: Tauler en blanc (Graella interactiva) -->
             <section class="flex-1 bg-slate-950 relative flex flex-col items-center justify-center p-3 overflow-auto min-h-0">
                 
                 <!-- Barra superior contextual: Control directe -->
@@ -207,16 +207,16 @@
                     </div>
                 </div>
 
-                <!-- Contenidor del Llençol -->
+                <!-- Contenidor del Tauler -->
                 <div id="canvas-wrapper" class="bg-slate-900 p-3 sm:p-5 rounded-2xl shadow-2xl border-4 border-slate-800 relative flex items-center justify-center">
                     <!-- La graella on es col·loquen les plaques -->
                     <div id="board-grid" class="grid gap-0 bg-slate-950/90 p-3 rounded-xl border-2 border-dashed border-slate-700 relative">
                         <!-- Caselles generades dinàmicament -->
                     </div>
 
-                    <!-- El Robot mTiny (Superposat absolutament sobre el tauler) -->
+                    <!-- El Robot (Superposat absolutament sobre el tauler) -->
                     <div id="mtiny-robot" class="absolute pointer-events-none flex items-center justify-center hidden" style="width: 60px; height: 60px;">
-                        <!-- SVG personalitzat del robot mTiny vist des de dalt (Vista zenital) -->
+                        <!-- SVG personalitzat del robot vist des de dalt (Vista zenital) -->
                         <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
                             <!-- Rodes laterals vistes des de dalt -->
                             <rect x="8" y="34" width="9" height="32" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
@@ -236,7 +236,7 @@
                             <!-- Botó d'encesa central a la part superior -->
                             <circle cx="50" cy="54" r="7" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
                             <circle cx="50" cy="54" r="2.5" fill="#0284c7"/>
-                            <!-- Franja posterior blava característica de Makeblock -->
+                            <!-- Franja posterior blava decorativa -->
                             <path d="M32 78 Q50 83 68 78" stroke="#2563eb" stroke-width="4" stroke-linecap="round" fill="none"/>
                             <!-- Fletxa vermella frontal ben gran i contrastada que indica cap on mira i avança -->
                             <path d="M50,-4 L35,14 L44,14 L44,24 L56,24 L56,14 L65,14 Z" fill="#ef4444" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
@@ -246,7 +246,7 @@
             </section>
         </div>
 
-        <!-- PANELL INFERIOR HORITZONTAL: Targetes de Programació mTiny -->
+        <!-- PANELL INFERIOR HORITZONTAL: Targetes de Programació -->
         <section class="w-full bg-slate-900 border-t-2 border-slate-800 flex flex-col z-20 shrink-0 shadow-[0_-10px_25px_rgba(0,0,0,0.45)]">
             
             <!-- Barra superior de la zona de programació: Títol, totes les targetes en línia i botons d'execució -->
@@ -258,7 +258,7 @@
                         <i class="fa-solid fa-layer-group text-sm"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació Robot</h2>
+                        <h2 class="font-bold text-slate-100 text-sm leading-none">Programació del Robot</h2>
                         <span class="text-[10px] text-slate-400">Tria les targetes d'esquerra a dreta →</span>
                     </div>
                 </div>
@@ -302,13 +302,13 @@
                             x4
                         </button>
                         <div class="w-px h-7 bg-slate-700 mx-0.5"></div>
-                        <button onclick="addCommand('loop2')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 2">
+                        <button onclick="addCommand('loop2')" class="h-11 px-3.5 flex items-center justify-center gap-0.5 rounded-l-xl rounded-r-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 2">
                             <i class="fa-solid fa-repeat text-xs"></i>2
                         </button>
-                        <button onclick="addCommand('loop3')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 3">
+                        <button onclick="addCommand('loop3')" class="h-11 px-3.5 flex items-center justify-center gap-0.5 rounded-l-xl rounded-r-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 3">
                             <i class="fa-solid fa-repeat text-xs"></i>3
                         </button>
-                        <button onclick="addCommand('loop4')" class="w-11 h-11 flex items-center justify-center gap-0.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 4">
+                        <button onclick="addCommand('loop4')" class="h-11 px-3.5 flex items-center justify-center gap-0.5 rounded-l-xl rounded-r-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 border border-yellow-500 font-extrabold text-sm shadow-sm transition active:scale-95" title="Bucle 4">
                             <i class="fa-solid fa-repeat text-xs"></i>4
                         </button>
                     </div>
@@ -385,44 +385,27 @@
         const TILE_CATALOG = [
             // --- 1. PLAQUES D'ANIMALS (Costat esquerre corbat, sense encaix a l'esquerra, màx 1) ---
             {
-                id: 'animal_dog', category: 'Animals (Inici esquerra corbat)', name: 'Gosset',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'dog',
-                curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><circle cx="54" cy="52" r="26" fill="#d97706"/><ellipse cx="30" cy="48" rx="7" ry="15" transform="rotate(15 30 48)" fill="#78350f"/><ellipse cx="78" cy="48" rx="7" ry="15" transform="rotate(-15 78 48)" fill="#78350f"/><circle cx="45" cy="46" r="4" fill="#1e293b"/><circle cx="63" cy="46" r="4" fill="#1e293b"/><ellipse cx="54" cy="58" rx="10" ry="7" fill="#fef3c7"/><ellipse cx="54" cy="55" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 62q5 5 10 0" stroke="#1e293b" stroke-width="2.5" fill="none"/></svg>`
+                id: 'animal_panda', category: 'Personatges (1 de cada · Costat esquerre corbat)', name: 'Panda',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda', maxCount: 1, curvedLeft: true,
+                svg: `<svg viewBox="0 0 100 100"><circle cx="30" cy="30" r="11" fill="#1e293b"/><circle cx="70" cy="30" r="11" fill="#1e293b"/><circle cx="50" cy="54" r="27" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/><ellipse cx="38" cy="49" rx="7" ry="9" transform="rotate(-18 38 49)" fill="#1e293b"/><ellipse cx="62" cy="49" rx="7" ry="9" transform="rotate(18 62 49)" fill="#1e293b"/><circle cx="39" cy="48" r="2.5" fill="#ffffff"/><circle cx="61" cy="48" r="2.5" fill="#ffffff"/><ellipse cx="50" cy="60" rx="5" ry="3.5" fill="#1e293b"/><path d="M44 66 Q50 71 56 66" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>`
             },
             {
-                id: 'animal_chicken', category: 'Animals (Inici esquerra corbat)', name: 'Pollet',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird',
-                curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><path d="M49 24c2-6 8-6 10 0" stroke="#ef4444" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="54" cy="54" r="24" fill="#facc15"/><circle cx="46" cy="48" r="3.5" fill="#1e293b"/><circle cx="62" cy="48" r="3.5" fill="#1e293b"/><polygon points="48,55 60,55 54,63" fill="#f97316"/></svg>`
+                id: 'animal_cat', category: 'Personatges (1 de cada · Costat esquerre corbat)', name: 'Gat',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'cat', maxCount: 1, curvedLeft: true,
+                svg: `<svg viewBox="0 0 100 100"><polygon points="24,42 30,18 46,34" fill="#fb923c" stroke="#c2410c" stroke-width="2"/><polygon points="76,42 70,18 54,34" fill="#fb923c" stroke="#c2410c" stroke-width="2"/><circle cx="50" cy="55" r="26" fill="#fdba74" stroke="#c2410c" stroke-width="2.5"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="60" cy="50" r="3.5" fill="#1e293b"/><polygon points="46,57 54,57 50,62" fill="#f43f5e"/><path d="M44 64 Q50 69 56 64" stroke="#7c2d12" stroke-width="2" fill="none"/><line x1="20" y1="54" x2="34" y2="56" stroke="#7c2d12" stroke-width="1.8"/><line x1="20" y1="61" x2="34" y2="60" stroke="#7c2d12" stroke-width="1.8"/><line x1="80" y1="54" x2="66" y2="56" stroke="#7c2d12" stroke-width="1.8"/><line x1="80" y1="61" x2="66" y2="60" stroke="#7c2d12" stroke-width="1.8"/></svg>`
             },
             {
-                id: 'animal_panda', category: 'Animals (Inici esquerra corbat)', name: 'Panda',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda',
-                curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><circle cx="36" cy="30" r="10" fill="#1e293b"/><circle cx="72" cy="30" r="10" fill="#1e293b"/><circle cx="54" cy="54" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/><ellipse cx="44" cy="50" rx="6" ry="8" transform="rotate(-15 44 50)" fill="#1e293b"/><ellipse cx="64" cy="50" rx="6" ry="8" transform="rotate(15 64 50)" fill="#1e293b"/><circle cx="45" cy="49" r="2.2" fill="#ffffff"/><circle cx="63" cy="49" r="2.2" fill="#ffffff"/><ellipse cx="54" cy="60" rx="4.5" ry="3" fill="#1e293b"/><path d="M49 65q5 4 10 0" stroke="#1e293b" stroke-width="2" fill="none"/></svg>`
+                id: 'animal_bird', category: 'Personatges (1 de cada · Costat esquerre corbat)', name: 'Pollet',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird', maxCount: 1, curvedLeft: true,
+                svg: `<svg viewBox="0 0 100 100"><path d="M46 27 Q50 16 54 27" stroke="#eab308" stroke-width="3" fill="none"/><circle cx="50" cy="54" r="25" fill="#fde047" stroke="#ca8a04" stroke-width="2.5"/><ellipse cx="26" cy="56" rx="8" ry="12" transform="rotate(-20 26 56)" fill="#facc15"/><ellipse cx="74" cy="56" rx="8" ry="12" transform="rotate(20 74 56)" fill="#facc15"/><circle cx="41" cy="48" r="3.5" fill="#1e293b"/><circle cx="59" cy="48" r="3.5" fill="#1e293b"/><polygon points="44,54 56,54 50,64" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/></svg>`
             },
             {
-                id: 'animal_cat', category: 'Animals (Inici esquerra corbat)', name: 'Gat',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'cat',
-                curvedLeft: true, maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><polygon points="30,42 36,18 50,34" fill="#f97316"/><polygon points="78,42 72,18 58,34" fill="#f97316"/><circle cx="54" cy="54" r="24" fill="#fb923c"/><circle cx="45" cy="49" r="3.5" fill="#1e293b"/><circle cx="63" cy="49" r="3.5" fill="#1e293b"/><polygon points="50,56 58,56 54,60" fill="#f43f5e"/><line x1="26" y1="54" x2="38" y2="56" stroke="#7c2d12" stroke-width="2"/><line x1="82" y1="54" x2="70" y2="56" stroke="#7c2d12" stroke-width="2"/></svg>`
+                id: 'animal_dog', category: 'Personatges (1 de cada · Costat esquerre corbat)', name: 'Gos',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'dog', maxCount: 1, curvedLeft: true,
+                svg: `<svg viewBox="0 0 100 100"><ellipse cx="24" cy="48" rx="9" ry="18" transform="rotate(15 24 48)" fill="#92400e"/><ellipse cx="76" cy="48" rx="9" ry="18" transform="rotate(-15 76 48)" fill="#92400e"/><circle cx="50" cy="54" r="26" fill="#d97706" stroke="#78350f" stroke-width="2.5"/><ellipse cx="50" cy="61" rx="13" ry="10" fill="#fef3c7"/><circle cx="40" cy="47" r="3.5" fill="#1e293b"/><circle cx="60" cy="47" r="3.5" fill="#1e293b"/><ellipse cx="50" cy="57" rx="4.5" ry="3.5" fill="#1e293b"/><path d="M45 64 Q50 69 55 64" stroke="#78350f" stroke-width="2" fill="none"/></svg>`
             },
 
-            // --- 2. GESPA VERDA (7 peces disponibles) ---
-            {
-                id: 'grass_plain', category: 'Terreny Base (7 peces)', name: 'Gespa',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610',
-                maxCount: 7,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M22 32l3-7 3 7M70 25l3-7 3 7M28 75l3-7 3 7M75 72l3-7 3 7" stroke="#55a630" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="50" cy="50" r="3" fill="#fef08a"/><circle cx="80" cy="45" r="2.5" fill="#ffffff"/></svg>`
-            },
-
-            // --- 3. PLAQUES TEMÀTIQUES ÚNIQUES (1 de cada) ---
-            {
-                id: 'food_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn',
-                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
-                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="18" y="44" width="64" height="12" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="18" cy="43" r="6" fill="#fef3c7"/><circle cx="18" cy="57" r="6" fill="#fef3c7"/><circle cx="82" cy="43" r="6" fill="#fef3c7"/><circle cx="82" cy="57" r="6" fill="#fef3c7"/><rect x="28" y="30" width="44" height="40" rx="16" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/><ellipse cx="45" cy="42" rx="10" ry="4" fill="#fca5a5" opacity="0.6"/></svg>`
-            },
+            // --- 2. PLAQUES TEMÀTIQUES ÚNIQUES (Màx. 1 unitat de cada) ---
             {
                 id: 'bamboo_forest', category: 'Plaques Úniques (1 de cada)', name: 'Bambú',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'panda', maxCount: 1,
@@ -434,9 +417,14 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><polygon points="72,50 88,34 88,66" fill="#0284c7"/><ellipse cx="46" cy="50" rx="30" ry="18" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/><circle cx="30" cy="46" r="3.5" fill="#0f172a"/><path d="M44 38q-6 12 0 24M55 40q-5 10 0 20" stroke="#e0f2fe" stroke-width="2.5" fill="none"/></svg>`
             },
             {
-                id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: 'Blat d'indi',
+                id: 'food_corn', category: 'Plaques Úniques (1 de cada)', name: "Blat d'indi",
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'bird', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><ellipse cx="50" cy="46" rx="15" ry="28" fill="#facc15" stroke="#ca8a04" stroke-width="2"/><path d="M38 35h24M36 46h28M38 57h24M45 22v48M55 22v48" stroke="#eab308" stroke-width="2"/><path d="M35 45Q22 65 50 80Q40 60 35 45Z" fill="#22c55e"/><path d="M65 45Q78 65 50 80Q60 60 65 45Z" fill="#16a34a"/></svg>`
+            },
+            {
+                id: 'food_bone_meat', category: 'Plaques Úniques (1 de cada)', name: 'Carn',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'dog', maxCount: 1,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="18" y="45" width="64" height="10" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><circle cx="18" cy="44" r="5" fill="#fef3c7"/><circle cx="18" cy="56" r="5" fill="#fef3c7"/><circle cx="82" cy="44" r="5" fill="#fef3c7"/><circle cx="82" cy="56" r="5" fill="#fef3c7"/><ellipse cx="50" cy="50" rx="22" ry="16" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/><ellipse cx="48" cy="48" rx="12" ry="8" fill="#fca5a5"/><circle cx="48" cy="48" r="4" fill="#fef3c7"/></svg>`
             },
             {
                 id: 'merry_go_round', category: 'Plaques Úniques (1 de cada)', name: 'Carrussel',
@@ -444,7 +432,7 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="76" width="60" height="8" rx="3" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/><rect x="46" y="38" width="8" height="38" fill="#facc15"/><line x1="30" y1="38" x2="30" y2="76" stroke="#94a3b8" stroke-width="2.5"/><line x1="70" y1="38" x2="70" y2="76" stroke="#94a3b8" stroke-width="2.5"/><ellipse cx="30" cy="58" rx="8" ry="5" fill="#ffffff" stroke="#a855f7" stroke-width="2"/><circle cx="24" cy="53" r="3.5" fill="#ffffff" stroke="#a855f7" stroke-width="1.5"/><ellipse cx="70" cy="54" rx="8" ry="5" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/><circle cx="76" cy="49" r="3.5" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/><polygon points="50,14 16,38 84,38" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><polygon points="50,14 34,38 66,38" fill="#facc15"/><circle cx="50" cy="12" r="4" fill="#facc15"/></svg>`
             },
             {
-                id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota ',
+                id: 'soccer_ball', category: 'Plaques Úniques (1 de cada)', name: 'Pilota de futbol',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#1e293b" stroke-width="3"/><polygon points="50,38 61,46 57,59 43,59 39,46" fill="#1e293b"/><line x1="50" y1="38" x2="50" y2="22" stroke="#1e293b" stroke-width="2.5"/><line x1="61" y1="46" x2="76" y2="41" stroke="#1e293b" stroke-width="2.5"/><line x1="57" y1="59" x2="66" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="43" y1="59" x2="34" y2="72" stroke="#1e293b" stroke-width="2.5"/><line x1="39" y1="46" x2="24" y2="41" stroke="#1e293b" stroke-width="2.5"/></svg>`
             },
@@ -454,7 +442,7 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="30" y="56" width="40" height="28" rx="3" fill="#ef4444" stroke="#991b1b" stroke-width="2"/><line x1="50" y1="56" x2="50" y2="84" stroke="#facc15" stroke-width="5"/><path d="M46 56L54 50L46 44L54 38" stroke="#64748b" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><circle cx="50" cy="29" r="3" fill="#ef4444"/><polygon points="40,19 60,19 50,8" fill="#3b82f6"/></svg>`
             },
             {
-                id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Banyera',
+                id: 'bathtub_shower', category: 'Plaques Úniques (1 de cada)', name: 'Bany',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M74 52V24Q74 16 64 16H58" stroke="#64748b" stroke-width="3.5" fill="none"/><polygon points="52,16 62,16 60,23 54,23" fill="#94a3b8"/><line x1="55" y1="27" x2="53" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><line x1="59" y1="27" x2="61" y2="35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/><path d="M20 52H80V64Q80 78 62 78H38Q20 78 20 64Z" fill="#ffffff" stroke="#0284c7" stroke-width="2.5"/><rect x="16" y="48" width="68" height="6" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></svg>`
             },
@@ -469,7 +457,7 @@
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="20" y="34" width="8" height="44" rx="2" fill="#92400e"/><rect x="72" y="46" width="8" height="32" rx="2" fill="#92400e"/><rect x="28" y="54" width="44" height="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><rect x="42" y="52" width="30" height="16" rx="3" fill="#8b5cf6"/><rect x="29" y="47" width="14" height="8" rx="3" fill="#fef08a"/><rect x="20" y="66" width="60" height="6" fill="#b45309"/></svg>`
             },
             {
-                id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: "Pastís",
+                id: 'birthday_cake', category: 'Plaques Úniques (1 de cada)', name: 'Pastís',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'happy', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><rect x="24" y="54" width="52" height="24" rx="4" fill="#f472b6" stroke="#be185d" stroke-width="2"/><rect x="32" y="38" width="36" height="16" rx="3" fill="#fbcfe8" stroke="#be185d" stroke-width="2"/><rect x="48" y="24" width="4" height="14" fill="#38bdf8"/><path d="M50 14Q54 20 50 24Q46 20 50 14Z" fill="#facc15"/></svg>`
             },
@@ -482,6 +470,13 @@
                 id: 'book_tile', category: 'Plaques Úniques (1 de cada)', name: 'Llibre',
                 bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 1,
                 svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M20 30Q35 26 50 32Q65 26 80 30V72Q65 68 50 74Q35 68 20 72Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="3"/><line x1="50" y1="32" x2="50" y2="74" stroke="#1d4ed8" stroke-width="2.5"/><line x1="27" y1="42" x2="43" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="27" y1="52" x2="43" y2="52" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="42" x2="73" y2="42" stroke="#93c5fd" stroke-width="2.5"/><line x1="57" y1="52" x2="73" y2="52" stroke="#93c5fd" stroke-width="2.5"/></svg>`
+            },
+
+            // --- 3. GESPA (Màx. 7 peces en total) ---
+            {
+                id: 'grass_plain', category: 'Terreny (Màx. 7 peces)', name: 'Gespa',
+                bg: '#9ae66e', border: '#68c13c', textColor: '#1e4610', sound: 'step', maxCount: 7,
+                svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#9ae66e"/><path d="M26 36l3-6 3 6M68 32l3-6 3 6M48 56l3-6 3 6M28 74l3-6 3 6M72 70l3-6 3 6" stroke="#65a30d" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>`
             }
         ];
 
@@ -503,7 +498,7 @@
             isRunning: false
         };
 
-        // Compta quantes unitats d'una placa hi ha actualment des al tauler
+        // Compta quantes unitats d'una placa hi ha actualment col·locades al tauler
         function getTilePlacedCount(tileId) {
             let count = 0;
             for (let r = 0; r < state.rows; r++) {
@@ -560,7 +555,7 @@
                     // Selecció per clic
                     btn.addEventListener('click', () => {
                         if (isDepleted) {
-                            showToast(`Ja has t el màxim de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
+                            showToast(`Ja has col·locat el màxim de "${tile.name}" (${maxCount}/${maxCount}).`, 'error');
                             return;
                         }
                         selectTool(tile.id);
@@ -821,7 +816,7 @@
             `;
         }
 
-        // Canvia l'eina activa (r placa, girar, esborrar o posicionar robot)
+        // Canvia l'eina activa (col·locar placa, girar, esborrar o posicionar robot)
         function selectTool(toolId) {
             state.selectedTool = toolId;
 
@@ -884,6 +879,7 @@
 
             renderPalette();
             renderBoard();
+            showToast('Exemple carregat! El Panda és a punt per anar cap al bambú.', 'success');
         }
 
         // Dibuixa la graella del llençol
@@ -948,7 +944,7 @@
             requestAnimationFrame(() => updateRobotVisualPosition(tileSize));
         }
 
-        // Gestiona la ció d'una placa validant quantitat màxima i encaix corbat esquerre
+        // Gestiona la col·locació d'una placa validant quantitat màxima i encaix corbat esquerre
         function placeTileAt(r, c, tileId) {
             const tile = TILE_CATALOG.find(t => t.id === tileId);
             if (!tile) return;
@@ -977,7 +973,7 @@
                 return;
             }
 
-            // Validació 2: No es pot r cap placa a l'esquerra d'una placa d'animal corbada
+            // Validació 2: No es pot col·locar cap placa a l'esquerra d'una placa d'animal corbada
             if (c + 1 < state.cols && state.board[r][c + 1] !== null) {
                 const rightTile = TILE_CATALOG.find(t => t.id === state.board[r][c + 1].id);
                 if (rightTile && rightTile.curvedLeft) {
@@ -1100,15 +1096,15 @@
             },
             loop2: {
                 html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>2</span>',
-                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+                classes: 'h-11 px-3.5 rounded-l-xl rounded-r-full bg-yellow-400 text-slate-900 border border-yellow-500'
             },
             loop3: {
                 html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>3</span>',
-                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+                classes: 'h-11 px-3.5 rounded-l-xl rounded-r-full bg-yellow-400 text-slate-900 border border-yellow-500'
             },
             loop4: {
                 html: '<span class="font-extrabold text-xs flex items-center gap-0.5"><i class="fa-solid fa-repeat text-[10px]"></i>4</span>',
-                classes: 'w-11 h-11 rounded-xl bg-yellow-400 text-slate-900 border border-yellow-500'
+                classes: 'h-11 px-3.5 rounded-l-xl rounded-r-full bg-yellow-400 text-slate-900 border border-yellow-500'
             }
         };
 
@@ -1283,7 +1279,7 @@
                 const nextC = state.robot.col + deltas[state.robot.dir].dc;
 
                 if (nextR < 0 || nextR >= state.rows || nextC < 0 || nextC >= state.cols) {
-                    showToast('Atenció! En mTiny ha arribat al límit del llençol.', 'error');
+                    showToast('Atenció! El robot ha arribat al límit del tauler.', 'error');
                     playSoundEffect('error');
                     return false;
                 }
@@ -1318,7 +1314,7 @@
         function moveRobotManual(action) {
             if (state.isRunning) return;
             if (!state.robot.placed) {
-                showToast('Selecciona l’eina i col·loca el robot sobre una casella primer.', 'info');
+                showToast('Selecciona l’eina "Col·loca robot" i posa’l sobre una casella primer.', 'info');
                 return;
             }
             executeSingleStep(action);
@@ -1329,7 +1325,7 @@
             if (state.isRunning) return;
 
             if (!state.robot.placed) {
-                showToast('Col·loca el robot al llençol abans d’executar el programa!', 'error');
+                showToast('Col·loca el robot al tauler abans d’executar el programa!', 'error');
                 playSoundEffect('error');
                 return;
             }
@@ -1386,7 +1382,7 @@
             document.getElementById('btn-clear-board').addEventListener('click', () => {
                 if (state.isRunning) return;
                 initBoard(state.cols, state.rows, false);
-                showToast('S’ha netejat tot el llençol.', 'info');
+                showToast('S’ha netejat tot el tauler.', 'info');
             });
 
             document.getElementById('btn-clear-code').addEventListener('click', () => {
@@ -1403,7 +1399,7 @@
                     state.robot = { ...state.initialRobot };
                     updateRobotVisualPosition();
                     playSoundEffect('turn');
-                    showToast('mTiny ha tornat a la posició inicial.', 'info');
+                    showToast('El robot ha tornat a la posició inicial.', 'info');
                 }
             });
 
